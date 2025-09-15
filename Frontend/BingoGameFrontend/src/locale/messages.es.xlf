@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
+  <file source-language="en" target-language="es" datatype="plaintext" original="ng-i18n-build">
+    <body>
+      <trans-unit id="title" datatype="html">
+        <source>Bingo Game</source>
+        <target>Juego de Bingo</target>
+      </trans-unit>
+    </body>
+  </file>
+</xliff>

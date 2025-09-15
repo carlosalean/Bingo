@@ -1,0 +1,65 @@
+<div class="bingo-login-container">
+  <div class="bingo-balls-bg"></div>
+  <div class="login-card">
+    <div class="login-header">
+      <div class="bingo-logo">
+        <div class="bingo-ball b-ball">B</div>
+        <div class="bingo-ball i-ball">I</div>
+        <div class="bingo-ball n-ball">N</div>
+        <div class="bingo-ball g-ball">G</div>
+        <div class="bingo-ball o-ball">O</div>
+      </div>
+      <h1 class="login-title">¡Bienvenido al Bingo!</h1>
+      <p class="login-subtitle">Inicia sesión para comenzar a jugar</p>
+    </div>
+    <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="login-form">
+      <div class="form-fields">
+        <div class="input-group">
+          <mat-form-field appearance="fill" class="bingo-input">
+            <mat-label>Usuario o Email</mat-label>
+            <input matInput formControlName="usernameOrEmail" type="text" required>
+            <mat-icon matPrefix>person</mat-icon>
+            <mat-error *ngIf="loginForm.get('usernameOrEmail')?.invalid && loginForm.get('usernameOrEmail')?.touched">
+              Usuario o email es requerido
+            </mat-error>
+          </mat-form-field>
+        </div>
+        <div class="input-group">
+          <mat-form-field appearance="fill" class="bingo-input">
+            <mat-label>Contraseña</mat-label>
+            <input matInput formControlName="password" type="password" required>
+            <mat-icon matPrefix>lock</mat-icon>
+            <mat-error *ngIf="loginForm.get('password')?.invalid && loginForm.get('password')?.touched">
+              Contraseña es requerida (mínimo 6 caracteres)
+            </mat-error>
+          </mat-form-field>
+        </div>
+      </div>
+
+      <div class="login-actions">
+        <button
+          type="submit"
+          [disabled]="loginForm.invalid || isLoading"
+          class="bingo-btn bingo-btn-primary"
+          mat-raised-button
+        >
+          <mat-icon *ngIf="!isLoading">casino</mat-icon>
+          <span *ngIf="!isLoading">¡Jugar Bingo!</span>
+          <mat-spinner *ngIf="isLoading" diameter="20"></mat-spinner>
+          <span *ngIf="isLoading">Cargando...</span>
+        </button>
+      </div>
+
+      <div class="login-links">
+        <button type="button" (click)="goToRegister()" class="link-btn register-link">
+          <mat-icon>person_add</mat-icon>
+          ¿No tienes cuenta? Regístrate
+        </button>
+        <button type="button" (click)="goToGuest()" class="link-btn guest-link">
+          <mat-icon>sports_esports</mat-icon>
+          Jugar como invitado
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

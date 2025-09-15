@@ -1,0 +1,158 @@
+<div class="join-room-container">
+  <div class="join-room-card">
+    <!-- Header -->
+    <div class="room-header">
+      <div class="bingo-logo-small">
+        <div class="bingo-ball-mini bingo-ball-b">B</div>
+        <div class="bingo-ball-mini bingo-ball-i">I</div>
+        <div class="bingo-ball-mini bingo-ball-n">N</div>
+        <div class="bingo-ball-mini bingo-ball-g">G</div>
+        <div class="bingo-ball-mini bingo-ball-o">O</div>
+      </div>
+      <h1>Unirse a Sala</h1>
+      <p>Ingresa el código de la sala para unirte</p>
+    </div>
+
+    <!-- Form -->
+    <form [formGroup]="joinRoomForm" (ngSubmit)="onSubmit()" class="room-form">
+      <!-- Room Code -->
+      <div class="form-group">
+        <mat-form-field appearance="fill" class="full-width">
+          <mat-label>Código de la Sala</mat-label>
+          <input 
+            matInput 
+            formControlName="roomCode" 
+            placeholder="Ej: ABC123"
+            (input)="onRoomCodeChange($event)"
+            maxlength="6"
+            style="text-transform: uppercase; letter-spacing: 2px; font-weight: bold; font-size: 1.2rem; text-align: center;">
+          <mat-icon matPrefix>vpn_key</mat-icon>
+          <mat-error *ngIf="joinRoomForm.get('roomCode')?.hasError('required')">
+            El código de la sala es requerido
+          </mat-error>
+          <mat-error *ngIf="joinRoomForm.get('roomCode')?.hasError('minlength')">
+            El código debe tener al menos 4 caracteres
+          </mat-error>
+          <mat-error *ngIf="joinRoomForm.get('roomCode')?.hasError('pattern')">
+            El código solo puede contener letras y números
+          </mat-error>
+        </mat-form-field>
+      </div>
+
+      <!-- Room Info Display -->
+      <div *ngIf="roomInfo" class="room-info-display">
+        <div class="info-header">
+          <mat-icon>info</mat-icon>
+          <h3>Información de la Sala</h3>
+        </div>
+        
+        <div class="info-content">
+          <div class="info-item">
+            <mat-icon>casino</mat-icon>
+            <div class="info-text">
+              <strong>{{ roomInfo.name }}</strong>
+              <span>{{ roomInfo.bingoType }}</span>
+            </div>
+          </div>
+          
+          <div class="info-item">
+            <mat-icon>people</mat-icon>
+            <div class="info-text">
+              <strong>{{ roomInfo.currentPlayers }}/{{ roomInfo.maxPlayers }} Jugadores</strong>
+              <span>Espacios disponibles</span>
+            </div>
+          </div>
+          
+          <div class="info-item">
+            <mat-icon>{{ roomInfo.isPrivate ? 'lock' : 'public' }}</mat-icon>
+            <div class="info-text">
+              <strong>{{ roomInfo.isPrivate ? 'Sala Privada' : 'Sala Pública' }}</strong>
+              <span>{{ roomInfo.status }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Error Display -->
+      <div *ngIf="errorMessage" class="error-display">
+        <mat-icon>error</mat-icon>
+        <span>{{ errorMessage }}</span>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="form-actions">
+        <button type="button" mat-stroked-button class="cancel-btn" (click)="goBack()">
+          <mat-icon>arrow_back</mat-icon>
+          Cancelar
+        </button>
+        
+        <button type="submit" mat-raised-button class="join-btn" [disabled]="joinRoomForm.invalid || isLoading">
+          <mat-icon *ngIf="!isLoading">group_add</mat-icon>
+          <mat-spinner *ngIf="isLoading" diameter="20"></mat-spinner>
+          {{ isLoading ? 'Uniéndose...' : 'Unirse a Sala' }}
+        </button>
+      </div>
+    </form>
+
+    <!-- Quick Join Section -->
+    <div class="quick-join-section">
+      <div class="divider">
+        <span>O</span>
+      </div>
+      
+      <div class="public-rooms">
+        <h3>
+          <mat-icon>public</mat-icon>
+          Salas Públicas Disponibles
+        </h3>
+        
+        <div *ngIf="publicRooms$ | async as rooms; else loadingRooms" class="public-rooms-list">
+          <div *ngIf="rooms.length > 0; else noPublicRooms" class="rooms-grid">
+            <div *ngFor="let room of rooms" class="public-room-card" (click)="joinPublicRoom(room.id)">
+              <div class="room-header">
+                <h4>{{ room.name }}</h4>
+                <div class="room-status">
+                  <mat-icon>people</mat-icon>
+                  <span>{{ room.currentPlayers }}/{{ room.maxPlayers }}</span>
+                </div>
+              </div>
+              
+              <div class="room-details">
+                <div class="detail">
+                  <mat-icon>casino</mat-icon>
+                  <span>{{ room.bingoType }}</span>
+                </div>
+              </div>
+              
+              <button mat-mini-fab class="join-quick-btn" title="Unirse rápidamente">
+                <mat-icon>play_arrow</mat-icon>
+              </button>
+            </div>
+          </div>
+          
+          <ng-template #noPublicRooms>
+            <div class="no-rooms">
+              <mat-icon>casino</mat-icon>
+              <p>No hay salas públicas disponibles</p>
+            </div>
+          </ng-template>
+        </div>
+        
+        <ng-template #loadingRooms>
+          <div class="loading-rooms">
+            <mat-spinner diameter="30"></mat-spinner>
+            <p>Buscando salas públicas...</p>
+          </div>
+        </ng-template>
+      </div>
+    </div>
+  </div>
+
+  <!-- Decorative Elements -->
+  <div class="room-decorations">
+    <div class="floating-ball ball-1"></div>
+    <div class="floating-ball ball-2"></div>
+    <div class="floating-ball ball-3"></div>
+    <div class="floating-ball ball-4"></div>
+  </div>
+</div>

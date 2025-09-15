@@ -1,0 +1,67 @@
+<div class="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 py-12 px-4 sm:px-6 lg:px-8">
+  <div class="max-w-md w-full space-y-8">
+    <div>
+      <h2 class="mt-6 text-center text-3xl font-extrabold text-gray-900 dark:text-white" i18n>
+        Crear Sala
+      </h2>
+      <p class="mt-2 text-center text-sm text-gray-600 dark:text-gray-400" i18n>
+        or Create Room
+      </p>
+    </div>
+    <form [formGroup]="createForm" (ngSubmit)="onSubmit()" class="mt-8 space-y-6">
+      <div class="space-y-4">
+        <mat-form-field appearance="outline" class="w-full">
+          <mat-label i18n>Name</mat-label>
+          <input matInput formControlName="name" required>
+          <mat-error *ngIf="createForm.get('name')?.invalid && createForm.get('name')?.touched" i18n>
+            Name is required (min 3 characters).
+          </mat-error>
+        </mat-form-field>
+        <mat-form-field appearance="outline" class="w-full">
+          <mat-label i18n>Bingo Type</mat-label>
+          <mat-select formControlName="bingoType" required>
+            <mat-option *ngFor="let type of bingoTypes" [value]="type">
+              {{ type === 'SeventyFive' ? '75 Ball' : '90 Ball' }}
+            </mat-option>
+          </mat-select>
+          <mat-error *ngIf="createForm.get('bingoType')?.invalid && createForm.get('bingoType')?.touched" i18n>
+            Bingo type is required.
+          </mat-error>
+        </mat-form-field>
+        <mat-form-field appearance="outline" class="w-full">
+          <mat-label i18n>Max Players</mat-label>
+          <input matInput type="number" formControlName="maxPlayers" required>
+          <mat-error *ngIf="createForm.get('maxPlayers')?.invalid && createForm.get('maxPlayers')?.touched" i18n>
+            Max players must be between 2 and 100.
+          </mat-error>
+        </mat-form-field>
+        <mat-checkbox formControlName="isPrivate" class="w-full" i18n>
+          Private Room
+        </mat-checkbox>
+      </div>
+
+      <div class="space-y-3">
+        <button
+          type="submit"
+          [disabled]="createForm.invalid || isLoading"
+          class="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-primary-blue hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-blue disabled:opacity-50"
+          i18n-title
+          title="Create Room"
+        >
+          <span *ngIf="!isLoading" i18n>Create Room</span>
+          <span *ngIf="isLoading" i18n>Creating...</span>
+        </button>
+        <button
+          type="button"
+          mat-button
+          color="warn"
+          (click)="goToDashboard()"
+          class="w-full"
+          i18n
+        >
+          Back to Dashboard
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

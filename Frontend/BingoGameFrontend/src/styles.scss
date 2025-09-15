@@ -1,0 +1,353 @@
+@use '@angular/material' as mat;
+@import url('https://fonts.googleapis.com/css2?family=Fredoka+One:wght@400&family=Nunito:wght@300;400;600;700;800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+// Bingo Color Palette
+$bingo-primary: mat.m2-define-palette((
+  50: #f3f4ff,
+  100: #e8eaff,
+  200: #d4d8ff,
+  300: #b6bbff,
+  400: #9499ff,
+  500: #667eea,
+  600: #5a6fd8,
+  700: #4f5fc4,
+  800: #444fb0,
+  900: #3a429c,
+  A100: #c5cbff,
+  A200: #9ca5ff,
+  A400: #667eea,
+  A700: #4f5fc4,
+  contrast: (
+    50: rgba(black, 0.87),
+    100: rgba(black, 0.87),
+    200: rgba(black, 0.87),
+    300: rgba(black, 0.87),
+    400: rgba(black, 0.87),
+    500: white,
+    600: white,
+    700: white,
+    800: white,
+    900: white,
+    A100: rgba(black, 0.87),
+    A200: rgba(black, 0.87),
+    A400: white,
+    A700: white,
+  )
+), 500, 100, 800);
+
+$bingo-accent: mat.m2-define-palette((
+  50: #e8f5e8,
+  100: #c8e6c9,
+  200: #a5d6a7,
+  300: #81c784,
+  400: #66bb6a,
+  500: #4caf50,
+  600: #43a047,
+  700: #388e3c,
+  800: #2e7d32,
+  900: #1b5e20,
+  A100: #b9f6ca,
+  A200: #69f0ae,
+  A400: #00e676,
+  A700: #00c853,
+  contrast: (
+    50: rgba(black, 0.87),
+    100: rgba(black, 0.87),
+    200: rgba(black, 0.87),
+    300: rgba(black, 0.87),
+    400: rgba(black, 0.87),
+    500: white,
+    600: white,
+    700: white,
+    800: white,
+    900: white,
+    A100: rgba(black, 0.87),
+    A200: rgba(black, 0.87),
+    A400: rgba(black, 0.87),
+    A700: white,
+  )
+), A200, A100, A400);
+
+$bingo-warn: mat.m2-define-palette(mat.$m2-red-palette);
+
+// Custom typography
+$bingo-typography: mat.m2-define-typography-config(
+  $font-family: '"Nunito", sans-serif',
+  $headline-1: mat.m2-define-typography-level(32px, 40px, 800, '"Fredoka One", cursive'),
+  $headline-2: mat.m2-define-typography-level(28px, 36px, 700, '"Fredoka One", cursive'),
+  $headline-3: mat.m2-define-typography-level(24px, 32px, 600, '"Nunito", sans-serif'),
+  $headline-4: mat.m2-define-typography-level(20px, 28px, 600, '"Nunito", sans-serif'),
+  $headline-5: mat.m2-define-typography-level(18px, 24px, 600, '"Nunito", sans-serif'),
+  $headline-6: mat.m2-define-typography-level(16px, 22px, 600, '"Nunito", sans-serif'),
+  $body-1: mat.m2-define-typography-level(16px, 24px, 400, '"Nunito", sans-serif'),
+  $body-2: mat.m2-define-typography-level(14px, 20px, 400, '"Nunito", sans-serif'),
+  $button: mat.m2-define-typography-level(14px, 20px, 600, '"Nunito", sans-serif'),
+);
+
+$bingo-theme: mat.m2-define-light-theme((
+  color: (
+    primary: $bingo-primary,
+    accent: $bingo-accent,
+    warn: $bingo-warn,
+  ),
+  typography: $bingo-typography,
+  density: 0,
+));
+
+@include mat.all-component-themes($bingo-theme);
+
+// Bingo CSS Variables
+:root {
+  // Primary Colors
+  --bingo-primary: #667eea;
+  --bingo-primary-light: #9ca5ff;
+  --bingo-primary-dark: #4f5fc4;
+  
+  // Accent Colors
+  --bingo-accent: #4caf50;
+  --bingo-accent-light: #81c784;
+  --bingo-accent-dark: #388e3c;
+  
+  // Bingo Ball Colors
+  --bingo-red: #ff6b6b;
+  --bingo-blue: #4ecdc4;
+  --bingo-green: #2ecc71;
+  --bingo-yellow: #feca57;
+  --bingo-purple: #a55eea;
+  
+  // Gradients
+  --bingo-gradient-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  --bingo-gradient-success: linear-gradient(135deg, #4caf50 0%, #45a049 100%);
+  --bingo-gradient-warning: linear-gradient(135deg, #ff9800 0%, #f57c00 100%);
+  --bingo-gradient-danger: linear-gradient(135deg, #f44336 0%, #d32f2f 100%);
+  
+  // Shadows
+  --bingo-shadow-light: 0 2px 8px rgba(0, 0, 0, 0.1);
+  --bingo-shadow-medium: 0 4px 16px rgba(0, 0, 0, 0.15);
+  --bingo-shadow-heavy: 0 8px 32px rgba(0, 0, 0, 0.2);
+  
+  // Border Radius
+  --bingo-radius-small: 8px;
+  --bingo-radius-medium: 12px;
+  --bingo-radius-large: 20px;
+  --bingo-radius-round: 50%;
+  
+  // Spacing
+  --bingo-spacing-xs: 4px;
+  --bingo-spacing-sm: 8px;
+  --bingo-spacing-md: 16px;
+  --bingo-spacing-lg: 24px;
+  --bingo-spacing-xl: 32px;
+}
+
+// Global Bingo Styles
+body {
+  font-family: 'Nunito', sans-serif;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  min-height: 100vh;
+  margin: 0;
+  padding: 0;
+}
+
+// Bingo Ball Animation
+.marked {
+  animation: bingoWin 0.8s ease-in-out;
+}
+
+@keyframes bingoWin {
+  0% {
+    transform: scale(1) rotate(0deg);
+  }
+  25% {
+    transform: scale(1.2) rotate(90deg);
+    background: var(--bingo-yellow);
+    box-shadow: 0 0 20px var(--bingo-yellow);
+  }
+  50% {
+    transform: scale(1.3) rotate(180deg);
+    background: var(--bingo-green);
+    box-shadow: 0 0 30px var(--bingo-green);
+  }
+  75% {
+    transform: scale(1.2) rotate(270deg);
+    background: var(--bingo-red);
+    box-shadow: 0 0 20px var(--bingo-red);
+  }
+  100% {
+    transform: scale(1) rotate(360deg);
+    background: var(--bingo-accent);
+  }
+}
+
+// Bingo Button Styles
+.bingo-btn {
+  border-radius: var(--bingo-radius-large);
+  font-weight: 600;
+  text-transform: none;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: var(--bingo-shadow-light);
+  
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--bingo-shadow-medium);
+  }
+  
+  &.bingo-btn-primary {
+    background: var(--bingo-gradient-primary);
+    color: white;
+  }
+  
+  &.bingo-btn-success {
+    background: var(--bingo-gradient-success);
+    color: white;
+  }
+  
+  &.bingo-btn-warning {
+    background: var(--bingo-gradient-warning);
+    color: white;
+  }
+  
+  &.bingo-btn-danger {
+    background: var(--bingo-gradient-danger);
+    color: white;
+  }
+}
+
+// Bingo Card Styles
+.bingo-card {
+  background: white;
+  border-radius: var(--bingo-radius-large);
+  box-shadow: var(--bingo-shadow-medium);
+  padding: var(--bingo-spacing-lg);
+  transition: all 0.3s ease;
+  
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--bingo-shadow-heavy);
+  }
+}
+
+// Material Design Overrides
+.mat-mdc-card {
+  border-radius: var(--bingo-radius-large) !important;
+  box-shadow: var(--bingo-shadow-light) !important;
+  
+  &:hover {
+    box-shadow: var(--bingo-shadow-medium) !important;
+  }
+}
+
+.mat-mdc-button {
+  border-radius: var(--bingo-radius-medium) !important;
+  font-weight: 600 !important;
+}
+
+.mat-mdc-raised-button {
+  border-radius: var(--bingo-radius-large) !important;
+  box-shadow: var(--bingo-shadow-light) !important;
+  
+  &:hover {
+    box-shadow: var(--bingo-shadow-medium) !important;
+  }
+}
+
+.mat-mdc-form-field {
+  .mat-mdc-form-field-flex {
+    border-radius: var(--bingo-radius-medium) !important;
+  }
+}
+
+// Scrollbar Styling
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: var(--bingo-radius-small);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--bingo-primary);
+  border-radius: var(--bingo-radius-small);
+  
+  &:hover {
+    background: var(--bingo-primary-dark);
+  }
+}
+
+// Utility Classes
+.text-bingo-primary { color: var(--bingo-primary) !important; }
+.text-bingo-accent { color: var(--bingo-accent) !important; }
+.text-bingo-red { color: var(--bingo-red) !important; }
+.text-bingo-blue { color: var(--bingo-blue) !important; }
+.text-bingo-green { color: var(--bingo-green) !important; }
+.text-bingo-yellow { color: var(--bingo-yellow) !important; }
+.text-bingo-purple { color: var(--bingo-purple) !important; }
+
+.bg-bingo-primary { background: var(--bingo-primary) !important; }
+.bg-bingo-accent { background: var(--bingo-accent) !important; }
+.bg-bingo-gradient-primary { background: var(--bingo-gradient-primary) !important; }
+.bg-bingo-gradient-success { background: var(--bingo-gradient-success) !important; }
+
+.shadow-bingo-light { box-shadow: var(--bingo-shadow-light) !important; }
+.shadow-bingo-medium { box-shadow: var(--bingo-shadow-medium) !important; }
+.shadow-bingo-heavy { box-shadow: var(--bingo-shadow-heavy) !important; }
+
+.rounded-bingo-small { border-radius: var(--bingo-radius-small) !important; }
+.rounded-bingo-medium { border-radius: var(--bingo-radius-medium) !important; }
+.rounded-bingo-large { border-radius: var(--bingo-radius-large) !important; }
+.rounded-bingo-full { border-radius: var(--bingo-radius-round) !important; }
+
+// Dark mode styles
+@media (prefers-color-scheme: dark) {
+  body {
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    color: #ffffff;
+  }
+  
+  .bingo-card {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    color: white;
+  }
+  
+  .mat-mdc-card {
+    background: rgba(255, 255, 255, 0.1) !important;
+    color: white !important;
+  }
+}
+
+// Responsive Design
+@media (max-width: 768px) {
+  .bingo-card {
+    padding: var(--bingo-spacing-md);
+    margin: var(--bingo-spacing-sm);
+  }
+  
+  .bingo-btn {
+    padding: var(--bingo-spacing-sm) var(--bingo-spacing-md);
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 480px) {
+  .bingo-card {
+    padding: var(--bingo-spacing-sm);
+    margin: var(--bingo-spacing-xs);
+  }
+  
+  .bingo-btn {
+    padding: var(--bingo-spacing-xs) var(--bingo-spacing-sm);
+    font-size: 12px;
+  }
+}
+
+body.dark .mat-mdc-card {
+  background-color: #1e1e1e;
+  color: #ffffff;
+}

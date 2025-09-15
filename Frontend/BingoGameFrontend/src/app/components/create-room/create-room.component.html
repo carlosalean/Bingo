@@ -1,0 +1,121 @@
+<div class="create-room-container">
+  <div class="create-room-card">
+    <!-- Header -->
+    <div class="room-header">
+      <div class="bingo-logo-small">
+        <div class="bingo-ball-mini bingo-ball-b">B</div>
+        <div class="bingo-ball-mini bingo-ball-i">I</div>
+        <div class="bingo-ball-mini bingo-ball-n">N</div>
+        <div class="bingo-ball-mini bingo-ball-g">G</div>
+        <div class="bingo-ball-mini bingo-ball-o">O</div>
+      </div>
+      <h1>Crear Nueva Sala</h1>
+      <p>Configura tu sala de Bingo personalizada</p>
+    </div>
+
+    <!-- Form -->
+    <form [formGroup]="createRoomForm" (ngSubmit)="onSubmit()" class="room-form">
+      <!-- Room Name -->
+      <div class="form-group">
+        <mat-form-field appearance="fill" class="full-width">
+          <mat-label>Nombre de la Sala</mat-label>
+          <input matInput formControlName="name" placeholder="Ej: Sala de los Amigos">
+          <mat-icon matPrefix>casino</mat-icon>
+          <mat-error *ngIf="createRoomForm.get('name')?.hasError('required')">
+            El nombre de la sala es requerido
+          </mat-error>
+          <mat-error *ngIf="createRoomForm.get('name')?.hasError('minlength')">
+            El nombre debe tener al menos 3 caracteres
+          </mat-error>
+        </mat-form-field>
+      </div>
+
+      <!-- Room Type -->
+      <div class="form-group">
+        <mat-form-field appearance="fill" class="full-width">
+          <mat-label>Tipo de Bingo</mat-label>
+          <mat-select formControlName="bingoType">
+            <mat-option value="SeventyFive">Bingo 75 números</mat-option>
+            <mat-option value="Ninety">Bingo 90 números</mat-option>
+          </mat-select>
+          <mat-icon matPrefix>grid_view</mat-icon>
+        </mat-form-field>
+      </div>
+
+      <!-- Max Players -->
+      <div class="form-group">
+        <mat-form-field appearance="fill" class="full-width">
+          <mat-label>Máximo de Jugadores</mat-label>
+          <mat-select formControlName="maxPlayers">
+            <mat-option value="2">2 Jugadores</mat-option>
+            <mat-option value="4">4 Jugadores</mat-option>
+            <mat-option value="6">6 Jugadores</mat-option>
+            <mat-option value="8">8 Jugadores</mat-option>
+            <mat-option value="10">10 Jugadores</mat-option>
+            <mat-option value="12">12 Jugadores</mat-option>
+            <mat-option value="15">15 Jugadores</mat-option>
+            <mat-option value="18">18 Jugadores</mat-option>
+            <mat-option value="20">20 Jugadores</mat-option>
+          </mat-select>
+          <mat-icon matPrefix>people</mat-icon>
+        </mat-form-field>
+      </div>
+
+      <!-- Privacy Settings -->
+      <div class="form-group privacy-section">
+        <div class="privacy-header">
+          <mat-icon>security</mat-icon>
+          <h3>Configuración de Privacidad</h3>
+        </div>
+        
+        <mat-radio-group formControlName="isPrivate" class="privacy-options">
+          <mat-radio-button [value]="false" class="privacy-option">
+            <div class="option-content">
+              <div class="option-icon">
+                <mat-icon>public</mat-icon>
+              </div>
+              <div class="option-text">
+                <strong>Sala Pública</strong>
+                <span>Cualquier jugador puede unirse</span>
+              </div>
+            </div>
+          </mat-radio-button>
+          
+          <mat-radio-button [value]="true" class="privacy-option">
+            <div class="option-content">
+              <div class="option-icon">
+                <mat-icon>lock</mat-icon>
+              </div>
+              <div class="option-text">
+                <strong>Sala Privada</strong>
+                <span>Solo con código de invitación</span>
+              </div>
+            </div>
+          </mat-radio-button>
+        </mat-radio-group>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="form-actions">
+        <button type="button" mat-stroked-button class="cancel-btn" (click)="goBack()">
+          <mat-icon>arrow_back</mat-icon>
+          Cancelar
+        </button>
+        
+        <button type="submit" mat-raised-button class="create-btn" [disabled]="createRoomForm.invalid || isLoading">
+          <mat-icon *ngIf="!isLoading">add_circle</mat-icon>
+          <mat-spinner *ngIf="isLoading" diameter="20"></mat-spinner>
+          {{ isLoading ? 'Creando...' : 'Crear Sala' }}
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Decorative Elements -->
+  <div class="room-decorations">
+    <div class="floating-ball ball-1"></div>
+    <div class="floating-ball ball-2"></div>
+    <div class="floating-ball ball-3"></div>
+    <div class="floating-ball ball-4"></div>
+  </div>
+</div>

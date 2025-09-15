@@ -1,0 +1,462 @@
+:host {
+  display: block;
+  min-height: 100vh;
+}
+
+.bingo-register-container {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 2rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.bingo-register-card {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(20px);
+  border-radius: 24px;
+  padding: 3rem;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+  max-width: 450px;
+  width: 100%;
+  position: relative;
+  z-index: 2;
+  animation: slideInUp 0.6s ease-out;
+}
+
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// Bingo Logo
+.bingo-logo-container {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 2rem;
+}
+
+.bingo-ball {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 1.5rem;
+  color: white;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+  animation: bounce 2s infinite;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  
+  &.bingo-ball-b {
+    background: linear-gradient(135deg, #ff6b6b, #ee5a52);
+    animation-delay: 0s;
+  }
+  
+  &.bingo-ball-i {
+    background: linear-gradient(135deg, #4ecdc4, #44a08d);
+    animation-delay: 0.1s;
+  }
+  
+  &.bingo-ball-n {
+    background: linear-gradient(135deg, #45b7d1, #3498db);
+    animation-delay: 0.2s;
+  }
+  
+  &.bingo-ball-g {
+    background: linear-gradient(135deg, #96ceb4, #2ecc71);
+    animation-delay: 0.3s;
+  }
+  
+  &.bingo-ball-o {
+    background: linear-gradient(135deg, #feca57, #ff9ff3);
+    animation-delay: 0.4s;
+  }
+}
+
+@keyframes bounce {
+  0%, 20%, 50%, 80%, 100% {
+    transform: translateY(0);
+  }
+  40% {
+    transform: translateY(-10px);
+  }
+  60% {
+    transform: translateY(-5px);
+  }
+}
+
+// Title
+.bingo-title {
+  text-align: center;
+  margin-bottom: 2rem;
+  
+  h1 {
+    font-family: 'Fredoka One', cursive;
+    font-size: 2.5rem;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin: 0 0 0.5rem 0;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+  }
+  
+  p {
+    color: #666;
+    font-size: 1.1rem;
+    margin: 0;
+    font-weight: 500;
+  }
+}
+
+// Form
+.bingo-form {
+  .form-fields {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .input-group {
+    position: relative;
+  }
+
+  .bingo-input {
+    width: 100%;
+    
+    ::ng-deep {
+      .mat-mdc-form-field-flex {
+        background-color: transparent !important;
+        border: 2px solid #f8f9fa;
+        border-radius: 12px;
+        transition: border-color 0.3s ease;
+        height: 56px;
+        min-height: 56px;
+        
+        &:hover {
+          border-color: #e9ecef;
+        }
+        
+        &.mdc-text-field--focused {
+          border-color: #667eea;
+          box-shadow: none !important;
+        }
+      }
+      
+      .mat-mdc-form-field-outline {
+        display: none;
+      }
+      
+      .mat-mdc-form-field-infix {
+        padding: 14px 12px;
+        min-height: 28px;
+        border: none;
+        display: flex;
+        align-items: center;
+      }
+      
+      .mat-mdc-input-element {
+        font-size: 16px;
+        padding: 0;
+        height: 24px;
+        line-height: 24px;
+      }
+      
+      .mat-icon {
+        color: #667eea;
+        margin-right: 8px;
+        display: flex;
+        align-items: center;
+      }
+      
+      .mat-mdc-text-field-wrapper {
+        border: none !important;
+      }
+      
+      .mdc-text-field--outlined .mdc-notched-outline .mdc-notched-outline__leading,
+      .mdc-text-field--outlined .mdc-notched-outline .mdc-notched-outline__notch,
+      .mdc-text-field--outlined .mdc-notched-outline .mdc-notched-outline__trailing {
+        border: none !important;
+      }
+      
+      .mdc-text-field--filled::before {
+        display: none !important;
+      }
+      
+      .mat-mdc-form-field-underline {
+        display: none !important;
+      }
+      
+      .mdc-line-ripple {
+        display: none !important;
+      }
+      
+      // Eliminar fondos grises en todos los estados
+      .mdc-text-field--filled {
+        background-color: transparent !important;
+        
+        &::before {
+          display: none !important;
+        }
+        
+        &:hover {
+          background-color: transparent !important;
+        }
+        
+        &.mdc-text-field--focused {
+          background-color: transparent !important;
+        }
+      }
+      
+      .mat-mdc-form-field-appearance-fill .mat-mdc-form-field-flex {
+         background-color: transparent !important;
+       }
+       
+       // Eliminar sombras y efectos de focus
+       .mat-mdc-form-field-focus-overlay {
+         display: none !important;
+       }
+       
+       .mat-mdc-form-field.mat-focused .mat-mdc-form-field-flex {
+         box-shadow: none !important;
+       }
+       
+       .mdc-text-field--focused {
+         box-shadow: none !important;
+       }
+       
+       .mat-mdc-form-field-ripple {
+         display: none !important;
+       }
+       
+       .mat-mdc-form-field-label-wrapper {
+         padding-left: 44px;
+       }
+      
+      .mat-mdc-form-field-suffix {
+          .mat-mdc-icon-button {
+            width: 40px;
+            height: 40px;
+            color: #667eea;
+            transition: all 0.3s ease;
+            
+            &:hover {
+              background: rgba(102, 126, 234, 0.1);
+              color: #764ba2;
+            }
+            
+            .mat-icon {
+              font-size: 20px;
+              width: 20px;
+              height: 20px;
+            }
+          }
+        }
+      
+      .mat-mdc-form-field-error {
+        color: #e74c3c;
+        font-weight: 500;
+        font-size: 12px;
+        margin-top: 4px;
+      }
+      
+      .mat-mdc-form-field-subscript-wrapper {
+        margin-top: 4px;
+      }
+    }
+  }
+}
+
+// Submit Button
+.bingo-submit-btn {
+  width: 100%;
+  height: 48px;
+  border-radius: 24px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  font-size: 1rem;
+  font-weight: 600;
+  text-transform: none;
+  box-shadow: 0 6px 12px rgba(102, 126, 234, 0.3);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  margin-bottom: 1.2rem;
+  
+  &:hover:not(:disabled) {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 24px rgba(102, 126, 234, 0.4);
+  }
+  
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+  
+  .btn-content {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    
+    mat-icon {
+      font-size: 20px;
+      width: 20px;
+      height: 20px;
+    }
+  }
+  
+  .btn-loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+  }
+}
+
+// Links
+.bingo-links {
+  text-align: center;
+  
+  p {
+    color: #666;
+    margin: 0 0 0.5rem 0;
+    font-size: 0.9rem;
+  }
+  
+  .bingo-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--bingo-primary);
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    
+    &:hover {
+      color: var(--bingo-accent);
+      transform: translateY(-1px);
+    }
+    
+    mat-icon {
+      font-size: 18px;
+      width: 18px;
+      height: 18px;
+    }
+  }
+}
+
+// Decorative Elements
+.bingo-decorations {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.floating-ball {
+  position: absolute;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  opacity: 0.1;
+  animation: float 6s ease-in-out infinite;
+  
+  &.ball-1 {
+    top: 10%;
+    left: 10%;
+    background: linear-gradient(135deg, #ff6b6b, #ee5a52);
+    animation-delay: 0s;
+  }
+  
+  &.ball-2 {
+    top: 20%;
+    right: 15%;
+    background: linear-gradient(135deg, #4ecdc4, #44a08d);
+    animation-delay: 1s;
+  }
+  
+  &.ball-3 {
+    bottom: 20%;
+    left: 15%;
+    background: linear-gradient(135deg, #45b7d1, #3498db);
+    animation-delay: 2s;
+  }
+  
+  &.ball-4 {
+    bottom: 10%;
+    right: 10%;
+    background: linear-gradient(135deg, #96ceb4, #2ecc71);
+    animation-delay: 3s;
+  }
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  33% {
+    transform: translateY(-20px) rotate(120deg);
+  }
+  66% {
+    transform: translateY(10px) rotate(240deg);
+  }
+}
+
+// Responsive Design
+@media (max-width: 768px) {
+  .bingo-register-container {
+    padding: 1rem;
+  }
+  
+  .bingo-register-card {
+    padding: 2rem;
+    margin: 1rem;
+  }
+  
+  .bingo-title h1 {
+    font-size: 2rem;
+  }
+  
+  .bingo-ball {
+    width: 40px;
+    height: 40px;
+    font-size: 1.2rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .bingo-register-card {
+    padding: 1.5rem;
+  }
+  
+  .bingo-title h1 {
+    font-size: 1.8rem;
+  }
+  
+  .bingo-ball {
+    width: 35px;
+    height: 35px;
+    font-size: 1rem;
+  }
+  
+  .bingo-logo-container {
+    gap: 6px;
+  }
+}

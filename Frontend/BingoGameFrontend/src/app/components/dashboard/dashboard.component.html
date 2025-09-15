@@ -1,0 +1,118 @@
+<div class="bingo-dashboard-container">
+  <!-- Header Section -->
+  <div class="dashboard-header">
+    <div class="bingo-logo-header">
+      <div class="bingo-ball-small bingo-ball-b">B</div>
+      <div class="bingo-ball-small bingo-ball-i">I</div>
+      <div class="bingo-ball-small bingo-ball-n">N</div>
+      <div class="bingo-ball-small bingo-ball-g">G</div>
+      <div class="bingo-ball-small bingo-ball-o">O</div>
+    </div>
+    <h1 class="dashboard-title">¡Bienvenido al Bingo!</h1>
+    <p class="dashboard-subtitle">Gestiona tus salas y únete a la diversión</p>
+    
+    <!-- User Actions -->
+    <div class="user-actions">
+      <button mat-icon-button class="logout-btn" (click)="logout()" title="Cerrar Sesión">
+        <mat-icon>logout</mat-icon>
+      </button>
+    </div>
+  </div>
+
+  <!-- Quick Actions -->
+  <div class="quick-actions">
+    <div class="action-card create-room" (click)="createRoom()">
+      <div class="action-icon">
+        <mat-icon>add_circle</mat-icon>
+      </div>
+      <h3>Crear Sala</h3>
+      <p>Inicia una nueva partida de Bingo</p>
+    </div>
+    
+    <div class="action-card join-room" (click)="joinRoom()">
+      <div class="action-icon">
+        <mat-icon>group_add</mat-icon>
+      </div>
+      <h3>Unirse a Sala</h3>
+      <p>Únete a una partida existente</p>
+    </div>
+  </div>
+
+  <!-- Rooms Section -->
+  <div class="rooms-section">
+    <div class="section-header">
+      <h2>
+        <mat-icon>home</mat-icon>
+        Mis Salas de Bingo
+      </h2>
+    </div>
+    
+    <div *ngIf="rooms$ | async as rooms; else loading" class="rooms-content">
+      <div *ngIf="rooms.length > 0" class="rooms-grid">
+        <div *ngFor="let room of rooms" class="room-card">
+          <div class="room-header">
+            <h3 class="room-name">{{room.name}}</h3>
+            <div class="room-status" [class.private]="room.isPrivate">
+              <mat-icon>{{room.isPrivate ? 'lock' : 'public'}}</mat-icon>
+              {{room.isPrivate ? 'Privada' : 'Pública'}}
+            </div>
+          </div>
+          
+          <div class="room-info">
+            <div class="info-item">
+              <mat-icon>casino</mat-icon>
+              <span>{{room.bingoType}}</span>
+            </div>
+            <div class="info-item">
+              <mat-icon>people</mat-icon>
+              <span>{{room.maxPlayers}} jugadores</span>
+            </div>
+          </div>
+          
+          <div class="room-actions">
+            <button mat-raised-button class="play-btn" (click)="enterRoom(room.id)">
+              <mat-icon>play_arrow</mat-icon>
+              Jugar
+            </button>
+            <button mat-icon-button class="delete-btn" (click)="deleteRoom(room.id)" title="Eliminar Sala">
+              <mat-icon>delete</mat-icon>
+            </button>
+          </div>
+        </div>
+      </div>
+      
+      <div *ngIf="rooms.length === 0" class="empty-state">
+        <div class="empty-icon">
+          <mat-icon>casino</mat-icon>
+        </div>
+        <h3>¡No tienes salas aún!</h3>
+        <p>Crea tu primera sala de Bingo para comenzar a jugar</p>
+        <button mat-raised-button class="bingo-btn bingo-btn-primary" (click)="createRoom()">
+          <mat-icon>add</mat-icon>
+          Crear Mi Primera Sala
+        </button>
+      </div>
+    </div>
+    
+    <ng-template #loading>
+      <div class="loading-state">
+        <div class="loading-spinner">
+          <div class="spinner-ball"></div>
+          <div class="spinner-ball"></div>
+          <div class="spinner-ball"></div>
+        </div>
+        <p>Cargando tus salas...</p>
+      </div>
+    </ng-template>
+  </div>
+
+  <!-- Decorative Elements -->
+  <div class="dashboard-decorations">
+    <div class="floating-ball ball-1"></div>
+    <div class="floating-ball ball-2"></div>
+    <div class="floating-ball ball-3"></div>
+    <div class="floating-ball ball-4"></div>
+    <div class="floating-ball ball-5"></div>
+    <div class="floating-ball ball-6"></div>
+  </div>
+</div>

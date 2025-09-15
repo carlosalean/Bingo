@@ -1,0 +1,60 @@
+<div class="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 py-12 px-4 sm:px-6 lg:px-8">
+  <div class="max-w-md w-full space-y-8">
+    <div>
+      <h2 class="mt-6 text-center text-3xl font-extrabold text-gray-900 dark:text-white" i18n>
+        Unirse a Sala
+      </h2>
+      <p class="mt-2 text-center text-sm text-gray-600 dark:text-gray-400" i18n>
+        or Join Room
+      </p>
+    </div>
+    <form [formGroup]="joinForm" (ngSubmit)="onSubmit()" class="mt-8 space-y-6">
+      <div class="space-y-4">
+        <mat-form-field appearance="outline" class="w-full">
+          <mat-label i18n>Invite Code</mat-label>
+          <input matInput formControlName="inviteCode" required>
+          <mat-error *ngIf="joinForm.get('inviteCode')?.invalid && joinForm.get('inviteCode')?.touched" i18n>
+            Invite code is required.
+          </mat-error>
+        </mat-form-field>
+        <mat-form-field appearance="outline" class="w-full">
+          <mat-label i18n>Number of Cards</mat-label>
+          <mat-select formControlName="numCards" required>
+            <mat-option *ngFor="let option of numCardsOptions" [value]="option">
+              {{ option }} Card{{ option > 1 ? 's' : '' }}
+            </mat-option>
+          </mat-select>
+          <mat-error *ngIf="joinForm.get('numCards')?.invalid && joinForm.get('numCards')?.touched" i18n>
+            Number of cards must be 1-3.
+          </mat-error>
+        </mat-form-field>
+        <mat-checkbox formControlName="isGuest" (change)="onGuestToggle()" class="w-full" i18n>
+          Join as Guest (no account needed)
+        </mat-checkbox>
+      </div>
+
+      <div class="space-y-3">
+        <button
+          type="submit"
+          [disabled]="joinForm.invalid || isLoading"
+          class="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-primary-blue hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-blue disabled:opacity-50"
+          i18n-title
+          title="Join Room"
+        >
+          <span *ngIf="!isLoading" i18n>Join Room</span>
+          <span *ngIf="isLoading" i18n>Joining...</span>
+        </button>
+        <button
+          type="button"
+          mat-button
+          color="warn"
+          (click)="goToDashboard()"
+          class="w-full"
+          i18n
+        >
+          Back to Dashboard
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

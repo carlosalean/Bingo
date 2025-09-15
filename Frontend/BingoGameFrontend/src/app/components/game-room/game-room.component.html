@@ -1,0 +1,89 @@
+<mat-sidenav-container class="h-screen" autosize>
+  <!-- Left Sidenav: Players -->
+  <mat-sidenav #leftSidenav mode="side" opened class="w-64" position="start">
+    <mat-sidenav-content class="p-4">
+      <h3 class="text-lg font-bold mb-4" i18n>Players</h3>
+      <mat-list>
+        <mat-list-item *ngFor="let player of players">
+          <span matListItemTitle>{{player.username}}</span>
+          <span matListItemLine>{{player.marks}}/{{player.totalCells}} marked</span>
+          <mat-progress-bar *ngIf="player.totalCells > 0" [value]="(player.marks / player.totalCells) * 100" class="w-full mt-1"></mat-progress-bar>
+        </mat-list-item>
+      </mat-list>
+    </mat-sidenav-content>
+  </mat-sidenav>
+
+  <!-- Main Content -->
+  <mat-sidenav-content>
+    <div class="flex flex-col h-full">
+      <!-- Top: Drawn Balls -->
+      <div class="p-4 bg-white dark:bg-gray-800 border-b">
+        <h3 class="text-lg font-bold mb-2" i18n>Drawn Balls</h3>
+        <mat-chip-set aria-label="Drawn balls">
+          <mat-chip-option *ngFor="let ball of drawnBalls" selected="true" class="m-1">
+            {{ball}}
+          </mat-chip-option>
+        </mat-chip-set>
+      </div>
+
+      <!-- Middle: Host Controls -->
+      <div class="p-4 flex justify-center space-x-2 bg-gray-50 dark:bg-gray-900" *ngIf="isHost">
+        <button mat-raised-button color="primary" (click)="startGame()" [disabled]="gameStatus === 'Started' || gameStatus === 'Paused' || gameStatus === 'Ended'" i18n>
+          Start Game
+        </button>
+        <button mat-raised-button color="accent" (click)="drawBall()" [disabled]="gameStatus !== 'Started'" i18n>
+          Draw Ball
+        </button>
+        <button mat-raised-button color="warn" (click)="pauseGame()" [disabled]="gameStatus !== 'Started'" i18n>
+          Pause
+        </button>
+        <button mat-raised-button color="warn" (click)="endGame()" [disabled]="gameStatus === 'Waiting'" i18n>
+          End Game
+        </button>
+      </div>
+
+      <!-- Bottom: Bingo Card -->
+      <div class="flex-1 p-4 overflow-auto">
+        <h3 class="text-lg font-bold mb-4 text-center" i18n>Bingo Card</h3>
+        <div class="flex justify-center">
+          <div class="grid" [ngClass]="is75Ball ? 'grid-cols-5 gap-1' : 'grid-cols-9 gap-1'">
+            <div *ngFor="let col of bingoCard; let colIndex = index" class="flex flex-col items-center">
+              <div *ngIf="is75Ball && colIndex < 5" class="font-bold text-lg mb-1">{{['B','I','N','G','O'][colIndex]}}</div>
+              <div *ngFor="let cell of col; let rowIndex = index" 
+                   class="w-16 h-16 border border-gray-300 dark:border-gray-600 flex items-center justify-center text-center cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                   [class.marked]="cell.marked"
+                   [class.bg-success-green]="cell.marked"
+                   [class.text-white]="cell.marked"
+                   (click)="toggleCell(colIndex, rowIndex, cell)"
+                   [class.free]="cell.number === 0">
+                <span *ngIf="cell.number === 0" i18n>FREE</span>
+                <span *ngIf="cell.number > 0">{{cell.number}}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </mat-sidenav-content>
+
+  <!-- Right Sidenav: Chat -->
+  <mat-sidenav #rightSidenav mode="side" opened class="w-80" position="end">
+    <mat-sidenav-content class="p-4 h-full flex flex-col">
+      <h3 class="text-lg font-bold mb-4" i18n>Chat</h3>
+      <mat-list class="flex-1 overflow-y-auto mb-4">
+        <mat-list-item *ngFor="let message of messages">
+          <span matListItemTitle><strong>{{message.user}}:</strong> {{message.text}}</span>
+          <span matListItemLine class="text-xs text-gray-500">{{message.timestamp | date:'short'}}</span>
+        </mat-list-item>
+      </mat-list>
+      <div class="flex">
+        <mat-form-field appearance="outline" class="flex-1 mr-2">
+          <input matInput [formControl]="messageControl" placeholder="Type a message..." (keyup.enter)="sendMessage()">
+        </mat-form-field>
+        <button mat-icon-button color="primary" (click)="sendMessage()" [disabled]="!messageControl.value?.trim()">
+          <mat-icon>send</mat-icon>
+        </button>
+      </div>
+    </mat-sidenav-content>
+  </mat-sidenav>
+</mat-sidenav-container>

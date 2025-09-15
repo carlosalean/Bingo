@@ -1,0 +1,74 @@
+:host {
+  display: block;
+}
+
+.mat-sidenav-container {
+  height: 100vh;
+}
+
+.marked {
+  animation: pulse 0.5s ease-in-out;
+}
+
+.free {
+  background-color: var(--success-green) !important;
+  color: white;
+  font-weight: bold;
+}
+
+@media (max-width: 768px) {
+  .mat-sidenav {
+    width: 280px !important;
+  }
+
+  .grid-cols-5 {
+    grid-template-columns: repeat(5, 50px);
+  }
+
+  .grid-cols-9 {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .w-16 {
+    width: 50px;
+  }
+
+  .h-16 {
+    height: 50px;
+  }
+}
+
+.dark .mat-sidenav-content {
+  background-color: #121212;
+}
+
+.chat-messages {
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.bingo-cell {
+  transition: all 0.2s ease;
+  border: 2px solid var(--primary-blue);
+}
+
+.bingo-cell:hover:not(.marked) {
+  background-color: rgba(0, 123, 255, 0.1);
+}
+
+.bingo-cell.marked {
+  border-color: var(--success-green);
+  background-color: var(--success-green) !important;
+  color: white;
+}
+
+.host-controls {
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+@media (max-width: 640px) {
+  .host-controls button {
+    flex: 1 1 45%;
+  }
+}
