@@ -16,8 +16,32 @@
   <!-- Main Content -->
   <mat-sidenav-content>
     <div class="flex flex-col h-full">
-      <!-- Top: Drawn Balls -->
+      <!-- Top: Room Info and Drawn Balls -->
       <div class="p-4 bg-white dark:bg-gray-800 border-b">
+        <!-- Room Code Display -->
+        <div class="flex justify-between items-center mb-4" *ngIf="roomCode">
+          <div class="room-code-display">
+            <h3 class="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Código de Sala</h3>
+            <div class="flex items-center gap-2">
+              <span class="text-2xl font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 px-4 py-2 rounded-lg border-2 border-blue-200 dark:border-blue-700">{{roomCode}}</span>
+              <button mat-icon-button (click)="copyRoomCode()" title="Copiar código">
+                <mat-icon>content_copy</mat-icon>
+              </button>
+            </div>
+          </div>
+          <div class="game-status">
+            <span class="px-3 py-1 rounded-full text-sm font-medium" 
+                  [ngClass]="{
+                    'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400': gameStatus === 'Waiting',
+                    'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400': gameStatus === 'Started',
+                    'bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-400': gameStatus === 'Paused',
+                    'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400': gameStatus === 'Ended'
+                  }">
+              {{getGameStatusText()}}
+            </span>
+          </div>
+        </div>
+        
         <h3 class="text-lg font-bold mb-2" i18n>Drawn Balls</h3>
         <mat-chip-set aria-label="Drawn balls">
           <mat-chip-option *ngFor="let ball of drawnBalls" selected="true" class="m-1">
@@ -27,23 +51,87 @@
       </div>
 
       <!-- Middle: Host Controls -->
-      <div class="p-4 flex justify-center space-x-2 bg-gray-50 dark:bg-gray-900" *ngIf="isHost">
-        <button mat-raised-button color="primary" (click)="startGame()" [disabled]="gameStatus === 'Started' || gameStatus === 'Paused' || gameStatus === 'Ended'" i18n>
-          Start Game
-        </button>
-        <button mat-raised-button color="accent" (click)="drawBall()" [disabled]="gameStatus !== 'Started'" i18n>
-          Draw Ball
-        </button>
-        <button mat-raised-button color="warn" (click)="pauseGame()" [disabled]="gameStatus !== 'Started'" i18n>
-          Pause
-        </button>
-        <button mat-raised-button color="warn" (click)="endGame()" [disabled]="gameStatus === 'Waiting'" i18n>
-          End Game
-        </button>
+      <div class="p-4 bg-gray-50 dark:bg-gray-900" *ngIf="isHost">
+        <div class="flex flex-col gap-4">
+          <!-- Game Controls -->
+          <div class="flex justify-center space-x-2 flex-wrap gap-2">
+            <button mat-raised-button color="primary" (click)="startGame()" [disabled]="gameStatus === 'Started' || gameStatus === 'Paused' || gameStatus === 'Ended'" i18n>
+              <mat-icon>play_arrow</mat-icon>
+              Iniciar Juego
+            </button>
+            <button mat-raised-button color="accent" (click)="drawBall()" [disabled]="gameStatus !== 'Started'" i18n>
+              <mat-icon>casino</mat-icon>
+              Sacar Bola
+            </button>
+            <button mat-raised-button color="warn" (click)="pauseGame()" [disabled]="gameStatus !== 'Started'" i18n>
+              <mat-icon>pause</mat-icon>
+              Pausar
+            </button>
+            <button mat-raised-button color="warn" (click)="endGame()" [disabled]="gameStatus === 'Waiting'" i18n>
+              <mat-icon>stop</mat-icon>
+              Terminar Juego
+            </button>
+          </div>
+          
+          <!-- Vista de administrador de tablas -->
+          <div *ngIf="showAdminView" class="admin-view-container">
+            <div class="admin-view-header">
+              <h4 class="text-md font-semibold mb-2">
+                <mat-icon>admin_panel_settings</mat-icon>
+                Vista de Administrador
+              </h4>
+              <button mat-button (click)="toggleAdminView()" color="primary">
+                <mat-icon>close</mat-icon>
+                Cerrar Vista Admin
+              </button>
+            </div>
+            <app-admin-tables 
+              [playerCards]="adminPlayerCards"
+              [drawnBalls]="drawnBalls"
+              [bingoType]="bingoType">
+            </app-admin-tables>
+          </div>
+
+          <!-- Player Cards Overview -->
+          <div class="player-cards-overview" *ngIf="gameStatus !== 'Waiting' && !showAdminView">
+            <div class="flex justify-between items-center mb-2">
+              <h4 class="text-md font-semibold">Vista de Tablas de Jugadores</h4>
+              <button mat-button (click)="toggleAdminView()" color="accent">
+                <mat-icon>admin_panel_settings</mat-icon>
+                Vista Completa Admin
+              </button>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-h-60 overflow-y-auto">
+              <div *ngFor="let player of players" class="player-card-preview bg-white dark:bg-gray-800 p-3 rounded-lg border">
+                <div class="flex justify-between items-center mb-2">
+                  <span class="font-medium text-sm">{{player.username}}</span>
+                  <span class="text-xs text-gray-500">{{player.marks}}/{{player.totalCells}}</span>
+                </div>
+                <div class="bingo-card-mini grid grid-cols-5 gap-1">
+                  <div *ngFor="let cell of getPlayerCardPreview(player)" 
+                       class="w-4 h-4 border border-gray-300 text-xs flex items-center justify-center"
+                       [class.bg-green-500]="cell.marked"
+                       [class.text-white]="cell.marked">
+                    {{cell.number || 'F'}}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
 
-      <!-- Bottom: Bingo Card -->
-      <div class="flex-1 p-4 overflow-auto">
+      <!-- Vista de jugador regular -->
+      <div *ngIf="!isHost" class="player-view">
+        <app-player-cards 
+          [playerCards]="playerCards"
+          [drawnBalls]="drawnBalls"
+          [gameStatus]="gameStatus">
+        </app-player-cards>
+      </div>
+
+      <!-- Bottom: Bingo Card (Host View) -->
+      <div *ngIf="isHost" class="flex-1 p-4 overflow-auto">
         <h3 class="text-lg font-bold mb-4 text-center" i18n>Bingo Card</h3>
         <div class="flex justify-center">
           <div class="grid" [ngClass]="is75Ball ? 'grid-cols-5 gap-1' : 'grid-cols-9 gap-1'">

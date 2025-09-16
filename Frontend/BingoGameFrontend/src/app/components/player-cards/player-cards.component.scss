@@ -1,0 +1,421 @@
+.player-cards-container {
+  padding: 20px;
+  max-width: 1400px;
+  margin: 0 auto;
+
+  .cards-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+    padding: 16px;
+    background: linear-gradient(135deg, #f5f5f5 0%, #e8e8e8 100%);
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+
+    .header-info {
+      h3 {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin: 0;
+        color: #333;
+        font-weight: 600;
+
+        mat-icon {
+          color: #ff6b35;
+          font-size: 28px;
+        }
+
+        mat-chip {
+          margin-left: 8px;
+        }
+      }
+    }
+
+    .header-controls {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+
+      button {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+    }
+  }
+
+  // Vista individual con tabs
+  .single-card-view {
+    .cards-tabs {
+      .tab-label {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-direction: column;
+        text-align: center;
+
+        mat-chip {
+          font-size: 10px;
+          height: 20px;
+          line-height: 20px;
+        }
+      }
+    }
+
+    .card-content {
+      padding: 20px;
+      display: flex;
+      justify-content: center;
+    }
+  }
+
+  // Vista de todas las cartas
+  .all-cards-view {
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+      gap: 24px;
+      margin-bottom: 24px;
+    }
+
+    .player-card {
+      transition: all 0.3s ease;
+      border-radius: 12px;
+      overflow: hidden;
+
+      &:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+      }
+
+      &.winner-card {
+        border: 3px solid #4caf50;
+        background: linear-gradient(135deg, #e8f5e8 0%, #f1f8e9 100%);
+        
+        mat-card-header {
+          background: linear-gradient(135deg, #4caf50 0%, #66bb6a 100%);
+          color: white;
+          margin: -16px -16px 16px -16px;
+          padding: 16px;
+        }
+      }
+
+      .card-avatar {
+        background: #ff6b35;
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      mat-card-title {
+        font-weight: 600;
+      }
+
+      mat-card-subtitle {
+        margin-top: 8px;
+      }
+    }
+  }
+
+  // Tabla de bingo
+  .bingo-table {
+    width: 100%;
+    max-width: 280px;
+    margin: 0 auto;
+    border: 2px solid #333;
+    border-radius: 8px;
+    overflow: hidden;
+    background: white;
+
+    .table-header {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      background: linear-gradient(135deg, #333 0%, #555 100%);
+
+      .header-cell {
+        padding: 8px;
+        text-align: center;
+        font-weight: bold;
+        color: white;
+        font-size: 16px;
+        border-right: 1px solid #666;
+
+        &:last-child {
+          border-right: none;
+        }
+      }
+    }
+
+    .table-body {
+      .table-row {
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        border-bottom: 1px solid #ddd;
+
+        &:last-child {
+          border-bottom: none;
+        }
+
+        .table-cell {
+          position: relative;
+          aspect-ratio: 1;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          border-right: 1px solid #ddd;
+          font-weight: 600;
+          font-size: 14px;
+          transition: all 0.2s ease;
+          background: white;
+
+          &:last-child {
+            border-right: none;
+          }
+
+          &.free-space {
+            background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
+            color: #333;
+
+            .free-icon {
+              font-size: 20px;
+              color: #ff6b35;
+            }
+          }
+
+          &.drawn {
+            background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+            color: #1976d2;
+            font-weight: bold;
+          }
+
+          &.marked {
+            background: linear-gradient(135deg, #4caf50 0%, #66bb6a 100%);
+            color: white;
+            font-weight: bold;
+
+            .mark-indicator {
+              position: absolute;
+              top: 2px;
+              right: 2px;
+              background: rgba(255,255,255,0.9);
+              border-radius: 50%;
+              width: 16px;
+              height: 16px;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+
+              mat-icon {
+                font-size: 12px;
+                color: #4caf50;
+              }
+            }
+          }
+
+          &.clickable {
+            cursor: pointer;
+
+            &:hover {
+              background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%);
+              transform: scale(1.05);
+            }
+          }
+        }
+      }
+    }
+  }
+
+  // Progreso de carta
+  .card-progress {
+    margin-top: 16px;
+
+    .progress-info {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    .progress-bar {
+      height: 8px;
+      background: #e0e0e0;
+      border-radius: 4px;
+      overflow: hidden;
+
+      .progress-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #2196f3 0%, #21cbf3 100%);
+        transition: width 0.3s ease;
+        border-radius: 4px;
+
+        &.winner-progress {
+          background: linear-gradient(90deg, #4caf50 0%, #66bb6a 100%);
+        }
+      }
+    }
+  }
+
+  // Estadísticas del jugador
+  .player-stats {
+    margin: 24px 0;
+
+    mat-card {
+      border-radius: 12px;
+      
+      mat-card-header {
+        mat-card-title {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          color: #333;
+
+          mat-icon {
+            color: #ff6b35;
+          }
+        }
+      }
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 16px;
+      margin-top: 16px;
+
+      .stat-item {
+        text-align: center;
+        padding: 16px;
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        border-radius: 8px;
+        border: 1px solid #dee2e6;
+
+        .stat-value {
+          font-size: 24px;
+          font-weight: bold;
+          color: #ff6b35;
+          margin-bottom: 4px;
+        }
+
+        .stat-label {
+          font-size: 12px;
+          color: #666;
+          font-weight: 500;
+        }
+      }
+    }
+  }
+
+  // Números cantados
+  .drawn-numbers {
+    mat-card {
+      border-radius: 12px;
+      
+      mat-card-header {
+        mat-card-title {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          color: #333;
+
+          mat-icon {
+            color: #ff6b35;
+          }
+        }
+      }
+    }
+
+    .numbers-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 16px;
+
+      .drawn-ball {
+        min-width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        font-size: 14px;
+        background: linear-gradient(135deg, #2196f3 0%, #21cbf3 100%);
+        color: white;
+        border: 2px solid #1976d2;
+        transition: transform 0.2s ease;
+
+        &:hover {
+          transform: scale(1.1);
+        }
+      }
+    }
+  }
+}
+
+// Responsive design
+@media (max-width: 768px) {
+  .player-cards-container {
+    padding: 12px;
+
+    .cards-header {
+      flex-direction: column;
+      gap: 16px;
+      text-align: center;
+
+      .header-controls {
+        justify-content: center;
+      }
+    }
+
+    .all-cards-view {
+      .cards-grid {
+        grid-template-columns: 1fr;
+        gap: 16px;
+      }
+    }
+
+    .bingo-table {
+      max-width: 250px;
+
+      .table-body .table-row .table-cell {
+        font-size: 12px;
+      }
+    }
+
+    .stats-grid {
+      grid-template-columns: repeat(2, 1fr) !important;
+    }
+
+    .drawn-numbers .numbers-grid {
+      justify-content: center;
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .player-cards-container {
+    padding: 8px;
+
+    .bingo-table {
+      max-width: 220px;
+
+      .table-header .header-cell {
+        font-size: 14px;
+        padding: 6px;
+      }
+
+      .table-body .table-row .table-cell {
+        font-size: 11px;
+      }
+    }
+
+    .stats-grid {
+      grid-template-columns: 1fr !important;
+    }
+  }
+}

@@ -1,0 +1,120 @@
+<div class="bingo-card-container" [class]="'size-' + size">
+  <!-- Header de la carta -->
+  <div class="card-header" *ngIf="showControls">
+    <div class="card-info">
+      <h4>Carta {{ card.cardNumber }}</h4>
+      <mat-chip *ngIf="card.isWinner">
+        <mat-icon>emoji_events</mat-icon>
+        {{ card.winningPattern }}
+      </mat-chip>
+      <mat-chip *ngIf="!card.isWinner">
+        {{ getCardProgress() }}% completado
+      </mat-chip>
+    </div>
+    
+    <div class="card-controls" *ngIf="gameStatus === 'playing'">
+      <button mat-icon-button 
+              color="primary" 
+              (click)="autoMarkDrawnNumbers()"
+              matTooltip="Auto-marcar números cantados">
+        <mat-icon>auto_fix_high</mat-icon>
+      </button>
+    </div>
+  </div>
+
+  <!-- Tabla de bingo -->
+  <div class="bingo-table" [class.winner-table]="card.isWinner">
+    <!-- Header con letras B-I-N-G-O -->
+    <div class="table-header">
+      <div class="header-cell">B</div>
+      <div class="header-cell">I</div>
+      <div class="header-cell">N</div>
+      <div class="header-cell">G</div>
+      <div class="header-cell">O</div>
+    </div>
+    
+    <!-- Cuerpo de la tabla -->
+    <div class="table-body">
+      <div *ngFor="let row of [0,1,2,3,4]; let rowIndex = index" class="table-row">
+        <div *ngFor="let col of [0,1,2,3,4]; let colIndex = index" 
+             class="table-cell"
+             [class.marked]="isCellMarked(rowIndex, colIndex)"
+             [class.drawn]="isNumberDrawn(card.numbers[colIndex][rowIndex])"
+             [class.free-space]="isFreeSpace(rowIndex, colIndex)"
+             [class.clickable]="canMarkCell(rowIndex, colIndex)"
+             [class.winner-cell]="card.isWinner && isCellMarked(rowIndex, colIndex)"
+             [matTooltip]="getCellTooltip(rowIndex, colIndex)"
+             (click)="onCellClick(rowIndex, colIndex)">
+          
+          <!-- Número o espacio libre -->
+          <span *ngIf="!isFreeSpace(rowIndex, colIndex); else freeSpace" class="cell-number">
+            {{ card.numbers[colIndex][rowIndex] }}
+          </span>
+          
+          <ng-template #freeSpace>
+            <mat-icon class="free-icon">star</mat-icon>
+            <span class="free-text">FREE</span>
+          </ng-template>
+          
+          <!-- Indicador de marcado -->
+          <div *ngIf="isCellMarked(rowIndex, colIndex)" class="mark-indicator">
+            <mat-icon class="mark-icon">check_circle</mat-icon>
+          </div>
+          
+          <!-- Indicador de número cantado -->
+          <div *ngIf="isNumberDrawn(card.numbers[colIndex][rowIndex]) && !isCellMarked(rowIndex, colIndex) && !isFreeSpace(rowIndex, colIndex)" 
+               class="drawn-indicator">
+            <mat-icon class="drawn-icon">radio_button_unchecked</mat-icon>
+          </div>
+          
+          <!-- Efecto de ganador -->
+          <div *ngIf="card.isWinner && isCellMarked(rowIndex, colIndex)" class="winner-effect">
+            <mat-icon class="winner-icon">celebration</mat-icon>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer con progreso -->
+  <div class="card-footer" *ngIf="showControls">
+    <div class="progress-section">
+      <div class="progress-info">
+        <span class="progress-text">Progreso: {{ getCardProgress() }}%</span>
+        <mat-icon *ngIf="card.isWinner" color="accent" class="winner-badge">emoji_events</mat-icon>
+      </div>
+      
+      <div class="progress-bar">
+        <div class="progress-fill" 
+             [style.width.%]="getCardProgress()"
+             [class.winner-progress]="card.isWinner"></div>
+      </div>
+    </div>
+    
+    <!-- Estadísticas rápidas -->
+    <div class="quick-stats">
+      <div class="stat-item">
+        <mat-icon>check_circle</mat-icon>
+        <span>{{ getMarkedCount() }}/24</span>
+      </div>
+      <div class="stat-item">
+        <mat-icon>record_voice_over</mat-icon>
+        <span>{{ getDrawnInCardCount() }}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Overlay de ganador -->
+  <div *ngIf="card.isWinner" class="winner-overlay">
+    <div class="winner-content">
+      <mat-icon class="winner-trophy">emoji_events</mat-icon>
+      <h3>¡BINGO!</h3>
+      <p>{{ card.winningPattern }}</p>
+      <div class="winner-animation">
+        <mat-icon>celebration</mat-icon>
+        <mat-icon>celebration</mat-icon>
+        <mat-icon>celebration</mat-icon>
+      </div>
+    </div>
+  </div>
+</div>

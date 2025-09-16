@@ -30,11 +30,11 @@
           <mat-error *ngIf="joinRoomForm.get('roomCode')?.hasError('required')">
             El código de la sala es requerido
           </mat-error>
-          <mat-error *ngIf="joinRoomForm.get('roomCode')?.hasError('minlength')">
-            El código debe tener al menos 4 caracteres
+          <mat-error *ngIf="joinRoomForm.get('roomCode')?.hasError('minlength') || joinRoomForm.get('roomCode')?.hasError('maxlength')">
+            El código debe tener exactamente 6 caracteres
           </mat-error>
           <mat-error *ngIf="joinRoomForm.get('roomCode')?.hasError('pattern')">
-            El código solo puede contener letras y números
+            El código debe tener el formato ABC123 (3 letras seguidas de 3 números)
           </mat-error>
         </mat-form-field>
       </div>

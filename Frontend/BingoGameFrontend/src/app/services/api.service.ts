@@ -128,4 +128,8 @@ export class ApiService {
   getPublicRooms(): Observable<RoomDto[]> {
     return this.http.get<RoomDto[]>(`${this.baseUrl}/room/public`, { headers: this.getAuthHeaders() });
   }
+
+  getRoomById(roomId: string): Observable<RoomDto> {
+    return this.http.get<RoomDto>(`${this.baseUrl}/room/${roomId}`, { headers: this.getAuthHeaders() });
+  }
 }

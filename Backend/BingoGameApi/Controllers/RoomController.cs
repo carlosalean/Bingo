@@ -51,7 +51,7 @@ public class RoomController : ControllerBase
         }
     }
 
-    [HttpGet]
+    [HttpGet("user")]
     [Authorize]
     public async Task<ActionResult<List<RoomDto>>> GetUserRooms()
     {

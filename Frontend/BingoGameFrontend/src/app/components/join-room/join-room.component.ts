@@ -65,8 +65,9 @@ export class JoinRoomComponent implements OnInit {
     this.joinRoomForm = this.fb.group({
       roomCode: ['', [
         Validators.required,
-        Validators.minLength(4),
-        Validators.pattern(/^[A-Za-z0-9]+$/)
+        Validators.minLength(6),
+        Validators.maxLength(6),
+        Validators.pattern(/^[A-Z]{3}[0-9]{3}$/)
       ]]
     });
   }
@@ -76,7 +77,7 @@ export class JoinRoomComponent implements OnInit {
       debounceTime(500),
       distinctUntilChanged(),
       switchMap(code => {
-        if (code && code.length >= 4) {
+        if (code && code.length === 6 && /^[A-Z]{3}[0-9]{3}$/.test(code)) {
           return this.apiService.getRoomByCode(code).pipe(
             catchError(error => {
               this.errorMessage = 'Sala no encontrada o código inválido';
@@ -84,6 +85,9 @@ export class JoinRoomComponent implements OnInit {
               return of(null);
             })
           );
+        } else if (code && code.length > 0) {
+          this.errorMessage = 'El código debe tener el formato ABC123 (3 letras seguidas de 3 números)';
+          this.roomInfo = null;
         }
         return of(null);
       })
@@ -104,12 +108,18 @@ export class JoinRoomComponent implements OnInit {
   }
 
   onRoomCodeChange(event: any): void {
-    const value = event.target.value.toUpperCase();
-    event.target.value = value;
-    this.joinRoomForm.patchValue({ roomCode: value });
+    let code = event.target.value.toUpperCase();
     
-    if (value.length >= 4) {
-      this.roomCodeSubject.next(value);
+    // Auto-format the input to uppercase
+    if (code !== event.target.value) {
+      this.joinRoomForm.patchValue({ roomCode: code });
+    }
+    
+    this.errorMessage = '';
+    this.roomInfo = null;
+    
+    if (code) {
+      this.roomCodeSubject.next(code);
     } else {
       this.roomInfo = null;
       this.errorMessage = '';

@@ -61,7 +61,7 @@ public class GameService : IGameService
         }).ToList();
     }
 
-    private string GetNumbersHash(List<int> numbers)
+    private static string GetNumbersHash(List<int> numbers)
     {
         return string.Join(",", numbers.Where(n => n > 0).OrderBy(n => n));
     }

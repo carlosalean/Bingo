@@ -1,0 +1,533 @@
+.bingo-card-container {
+  position: relative;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  overflow: hidden;
+  transition: all 0.3s ease;
+
+  &:hover {
+    box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+    transform: translateY(-2px);
+  }
+
+  // Tamaños de carta
+  &.size-small {
+    .bingo-table {
+      max-width: 200px;
+      
+      .table-header .header-cell {
+        font-size: 12px;
+        padding: 4px;
+      }
+      
+      .table-body .table-row .table-cell {
+        font-size: 10px;
+        
+        .cell-number {
+          font-size: 10px;
+        }
+        
+        .free-icon {
+          font-size: 14px;
+        }
+        
+        .free-text {
+          font-size: 8px;
+        }
+      }
+    }
+  }
+
+  &.size-medium {
+    .bingo-table {
+      max-width: 280px;
+    }
+  }
+
+  &.size-large {
+    .bingo-table {
+      max-width: 350px;
+      
+      .table-header .header-cell {
+        font-size: 20px;
+        padding: 12px;
+      }
+      
+      .table-body .table-row .table-cell {
+        font-size: 18px;
+        
+        .cell-number {
+          font-size: 18px;
+        }
+        
+        .free-icon {
+          font-size: 28px;
+        }
+        
+        .free-text {
+          font-size: 12px;
+        }
+      }
+    }
+  }
+
+  // Header de la carta
+  .card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-bottom: 1px solid #dee2e6;
+
+    .card-info {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+
+      h4 {
+        margin: 0;
+        font-weight: 600;
+        color: #333;
+      }
+
+      mat-chip {
+        font-size: 11px;
+        height: 24px;
+        
+        mat-icon {
+          font-size: 16px;
+        }
+      }
+    }
+
+    .card-controls {
+      display: flex;
+      gap: 8px;
+    }
+  }
+
+  // Tabla de bingo
+  .bingo-table {
+    width: 100%;
+    max-width: 280px;
+    margin: 0 auto;
+    border: 3px solid #333;
+    border-radius: 8px;
+    overflow: hidden;
+    background: white;
+    transition: all 0.3s ease;
+
+    &.winner-table {
+      border-color: #4caf50;
+      box-shadow: 0 0 20px rgba(76, 175, 80, 0.3);
+      animation: winnerGlow 2s ease-in-out infinite alternate;
+    }
+
+    .table-header {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      background: linear-gradient(135deg, #333 0%, #555 100%);
+
+      .header-cell {
+        padding: 10px;
+        text-align: center;
+        font-weight: bold;
+        color: white;
+        font-size: 18px;
+        border-right: 1px solid #666;
+        letter-spacing: 1px;
+
+        &:last-child {
+          border-right: none;
+        }
+      }
+    }
+
+    .table-body {
+      .table-row {
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        border-bottom: 1px solid #ddd;
+
+        &:last-child {
+          border-bottom: none;
+        }
+
+        .table-cell {
+          position: relative;
+          aspect-ratio: 1;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          border-right: 1px solid #ddd;
+          font-weight: 600;
+          font-size: 16px;
+          transition: all 0.3s ease;
+          background: white;
+          cursor: default;
+          overflow: hidden;
+
+          &:last-child {
+            border-right: none;
+          }
+
+          .cell-number {
+            font-weight: 700;
+            z-index: 2;
+            position: relative;
+          }
+
+          // Espacio libre
+          &.free-space {
+            background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
+            color: #333;
+            flex-direction: column;
+            gap: 2px;
+
+            .free-icon {
+              font-size: 24px;
+              color: #ff6b35;
+            }
+
+            .free-text {
+              font-size: 10px;
+              font-weight: bold;
+              letter-spacing: 0.5px;
+            }
+          }
+
+          // Número cantado pero no marcado
+          &.drawn:not(.marked) {
+            background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+            color: #1976d2;
+            font-weight: bold;
+            animation: pulse 2s ease-in-out infinite;
+
+            .drawn-indicator {
+              position: absolute;
+              top: 4px;
+              right: 4px;
+              z-index: 3;
+
+              .drawn-icon {
+                font-size: 16px;
+                color: #1976d2;
+                animation: bounce 1s ease-in-out infinite;
+              }
+            }
+          }
+
+          // Número marcado
+          &.marked {
+            background: linear-gradient(135deg, #4caf50 0%, #66bb6a 100%);
+            color: white;
+            font-weight: bold;
+            position: relative;
+
+            .mark-indicator {
+              position: absolute;
+              top: 50%;
+              left: 50%;
+              transform: translate(-50%, -50%);
+              z-index: 3;
+
+              .mark-icon {
+                font-size: 32px;
+                color: rgba(255,255,255,0.9);
+                filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+              }
+            }
+
+            &.winner-cell {
+              background: linear-gradient(135deg, #ff6b35 0%, #ff8a50 100%);
+              animation: winnerCell 1s ease-in-out infinite alternate;
+
+              .winner-effect {
+                position: absolute;
+                top: 2px;
+                left: 2px;
+                z-index: 4;
+
+                .winner-icon {
+                  font-size: 12px;
+                  color: #ffd700;
+                  animation: sparkle 1.5s ease-in-out infinite;
+                }
+              }
+            }
+          }
+
+          // Celda clickeable
+          &.clickable {
+            cursor: pointer;
+            
+            &:hover {
+              background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%);
+              transform: scale(1.05);
+              z-index: 5;
+              box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            }
+          }
+        }
+      }
+    }
+  }
+
+  // Footer de la carta
+  .card-footer {
+    padding: 12px 16px;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-top: 1px solid #dee2e6;
+
+    .progress-section {
+      margin-bottom: 12px;
+
+      .progress-info {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 8px;
+
+        .progress-text {
+          font-size: 14px;
+          font-weight: 500;
+          color: #333;
+        }
+
+        .winner-badge {
+          font-size: 20px;
+          animation: bounce 1s ease-in-out infinite;
+        }
+      }
+
+      .progress-bar {
+        height: 8px;
+        background: #e0e0e0;
+        border-radius: 4px;
+        overflow: hidden;
+
+        .progress-fill {
+          height: 100%;
+          background: linear-gradient(90deg, #2196f3 0%, #21cbf3 100%);
+          transition: width 0.5s ease;
+          border-radius: 4px;
+
+          &.winner-progress {
+            background: linear-gradient(90deg, #4caf50 0%, #66bb6a 100%);
+            animation: progressGlow 2s ease-in-out infinite alternate;
+          }
+        }
+      }
+    }
+
+    .quick-stats {
+      display: flex;
+      justify-content: space-around;
+      
+      .stat-item {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        font-size: 12px;
+        color: #666;
+        
+        mat-icon {
+          font-size: 16px;
+          color: #ff6b35;
+        }
+      }
+    }
+  }
+
+  // Overlay de ganador
+  .winner-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(76, 175, 80, 0.95);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+    animation: fadeIn 0.5s ease-in-out;
+
+    .winner-content {
+      text-align: center;
+      color: white;
+      padding: 20px;
+
+      .winner-trophy {
+        font-size: 48px;
+        color: #ffd700;
+        margin-bottom: 12px;
+        animation: bounce 1s ease-in-out infinite;
+      }
+
+      h3 {
+        margin: 0 0 8px 0;
+        font-size: 24px;
+        font-weight: bold;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+      }
+
+      p {
+        margin: 0 0 16px 0;
+        font-size: 14px;
+        opacity: 0.9;
+      }
+
+      .winner-animation {
+        display: flex;
+        justify-content: center;
+        gap: 8px;
+
+        mat-icon {
+          font-size: 20px;
+          color: #ffd700;
+          animation: sparkle 1.5s ease-in-out infinite;
+          
+          &:nth-child(2) {
+            animation-delay: 0.3s;
+          }
+          
+          &:nth-child(3) {
+            animation-delay: 0.6s;
+          }
+        }
+      }
+    }
+  }
+}
+
+// Animaciones
+@keyframes winnerGlow {
+  0% { box-shadow: 0 0 20px rgba(76, 175, 80, 0.3); }
+  100% { box-shadow: 0 0 30px rgba(76, 175, 80, 0.6); }
+}
+
+@keyframes winnerCell {
+  0% { background: linear-gradient(135deg, #ff6b35 0%, #ff8a50 100%); }
+  100% { background: linear-gradient(135deg, #ff8a50 0%, #ffab70 100%); }
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.02); }
+}
+
+@keyframes bounce {
+  0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+  40% { transform: translateY(-4px); }
+  60% { transform: translateY(-2px); }
+}
+
+@keyframes sparkle {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.7; transform: scale(1.2); }
+}
+
+@keyframes progressGlow {
+  0% { box-shadow: 0 0 5px rgba(76, 175, 80, 0.3); }
+  100% { box-shadow: 0 0 15px rgba(76, 175, 80, 0.6); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+// Responsive design
+@media (max-width: 768px) {
+  .bingo-card-container {
+    .card-header {
+      padding: 8px 12px;
+      
+      .card-info {
+        gap: 8px;
+        
+        h4 {
+          font-size: 14px;
+        }
+      }
+    }
+
+    .bingo-table {
+      max-width: 250px;
+      border-width: 2px;
+
+      .table-header .header-cell {
+        font-size: 14px;
+        padding: 6px;
+      }
+
+      .table-body .table-row .table-cell {
+        font-size: 12px;
+        
+        .mark-indicator .mark-icon {
+          font-size: 24px;
+        }
+        
+        .free-icon {
+          font-size: 18px;
+        }
+      }
+    }
+
+    .card-footer {
+      padding: 8px 12px;
+      
+      .quick-stats .stat-item {
+        font-size: 11px;
+        
+        mat-icon {
+          font-size: 14px;
+        }
+      }
+    }
+
+    .winner-overlay .winner-content {
+      padding: 16px;
+      
+      .winner-trophy {
+        font-size: 36px;
+      }
+      
+      h3 {
+        font-size: 20px;
+      }
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .bingo-card-container {
+    .bingo-table {
+      max-width: 220px;
+
+      .table-header .header-cell {
+        font-size: 12px;
+        padding: 4px;
+      }
+
+      .table-body .table-row .table-cell {
+        font-size: 11px;
+        
+        .mark-indicator .mark-icon {
+          font-size: 20px;
+        }
+        
+        .free-icon {
+          font-size: 16px;
+        }
+        
+        .free-text {
+          font-size: 8px;
+        }
+      }
+    }
+  }
+}

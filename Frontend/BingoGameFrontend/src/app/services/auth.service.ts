@@ -48,6 +48,11 @@ export class AuthService {
     return userStr ? JSON.parse(userStr) : null;
   }
 
+  getCurrentUserId(): string | null {
+    const user = this.getUser();
+    return user ? user.id : null;
+  }
+
   isLoggedIn(): boolean {
     const token = this.getToken();
     return !!token;

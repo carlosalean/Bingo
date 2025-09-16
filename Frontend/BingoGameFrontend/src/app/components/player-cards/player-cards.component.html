@@ -1,0 +1,194 @@
+<div class="player-cards-container">
+  <!-- Header con controles -->
+  <div class="cards-header">
+    <div class="header-info">
+      <h3>
+        <mat-icon>casino</mat-icon>
+        Mis Cartas de Bingo
+        <mat-chip [matBadge]="playerCards.length" matBadgeColor="accent">
+          {{ playerCards.length }} carta{{ playerCards.length !== 1 ? 's' : '' }}
+        </mat-chip>
+      </h3>
+    </div>
+    
+    <div class="header-controls">
+      <button mat-raised-button color="primary" (click="autoMarkDrawnNumbers()" 
+              [disabled]="gameStatus !== 'playing'">
+        <mat-icon>auto_fix_high</mat-icon>
+        Auto-marcar
+      </button>
+      
+      <button mat-button (click="toggleViewMode()">
+        <mat-icon>{{ showAllCards ? 'view_carousel' : 'view_module' }}</mat-icon>
+        {{ showAllCards ? 'Vista Individual' : 'Ver Todas' }}
+      </button>
+    </div>
+  </div>
+
+  <!-- Vista individual con tabs -->
+  <div *ngIf="!showAllCards" class="single-card-view">
+    <mat-tab-group [(selectedIndex)]="selectedCardIndex" class="cards-tabs">
+      <mat-tab *ngFor="let card of playerCards; let i = index; trackBy: trackByCardId" 
+               [label]="'Carta ' + card.cardNumber">
+        <ng-template mat-tab-label>
+          <div class="tab-label">
+            <span>Carta {{ card.cardNumber }}</span>
+            <mat-chip *ngIf="card.isWinner">
+              <mat-icon>emoji_events</mat-icon>
+              GANADORA
+            </mat-chip>
+            <mat-chip *ngIf="!card.isWinner">
+              {{ getCardProgress(card) }}%
+            </mat-chip>
+          </div>
+        </ng-template>
+        
+        <div class="card-content">
+          <app-bingo-card 
+            [card]="card" 
+            [drawnBalls]="drawnBalls"
+            [gameStatus]="gameStatus"
+            (cellClicked)="onCellClick($event)">
+          </app-bingo-card>
+        </div>
+      </mat-tab>
+    </mat-tab-group>
+  </div>
+
+  <!-- Vista de todas las cartas -->
+  <div *ngIf="showAllCards" class="all-cards-view">
+    <div class="cards-grid">
+      <mat-card *ngFor="let card of playerCards; trackBy: trackByCardId" 
+                class="player-card"
+                [class.winner-card]="card.isWinner">
+        <mat-card-header>
+          <div mat-card-avatar class="card-avatar">
+            <mat-icon>casino</mat-icon>
+          </div>
+          <mat-card-title>Carta {{ card.cardNumber }}</mat-card-title>
+          <mat-card-subtitle>
+            <mat-chip *ngIf="card.isWinner">
+          <mat-icon>emoji_events</mat-icon>
+          {{ card.winningPattern }}
+        </mat-chip>
+        <mat-chip *ngIf="!card.isWinner">
+          {{ getCardProgress(card) }}% completado
+        </mat-chip>
+          </mat-card-subtitle>
+        </mat-card-header>
+
+        <mat-card-content>
+          <div class="bingo-table">
+            <div class="table-header">
+              <div class="header-cell">B</div>
+              <div class="header-cell">I</div>
+              <div class="header-cell">N</div>
+              <div class="header-cell">G</div>
+              <div class="header-cell">O</div>
+            </div>
+            
+            <div class="table-body">
+              <div *ngFor="let row of [0,1,2,3,4]; let rowIndex = index" class="table-row">
+                <div *ngFor="let col of [0,1,2,3,4]; let colIndex = index" 
+                     class="table-cell"
+                     [class.marked]="card.markedNumbers[colIndex][rowIndex]"
+                     [class.drawn]="isNumberDrawn(card.numbers[colIndex][rowIndex])"
+                     [class.free-space]="rowIndex === 2 && colIndex === 2"
+                     [class.clickable]="gameStatus === 'playing' && isNumberDrawn(card.numbers[colIndex][rowIndex])"
+                     (click)="onCellClick({cardId: card.id, row: rowIndex, col: colIndex})">
+                  <span *ngIf="!(rowIndex === 2 && colIndex === 2); else freeSpace">
+                    {{ card.numbers[colIndex][rowIndex] }}
+                  </span>
+                  <ng-template #freeSpace>
+                    <mat-icon class="free-icon">star</mat-icon>
+                  </ng-template>
+                  
+                  <!-- Indicador de marcado -->
+                  <div *ngIf="card.markedNumbers[colIndex][rowIndex]" class="mark-indicator">
+                    <mat-icon>check</mat-icon>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Progreso de la carta -->
+          <div class="card-progress">
+            <div class="progress-info">
+              <span>Progreso: {{ getCardProgress(card) }}%</span>
+              <mat-icon *ngIf="card.isWinner" color="accent">emoji_events</mat-icon>
+            </div>
+            <div class="progress-bar">
+              <div class="progress-fill" 
+                   [style.width.%]="getCardProgress(card)"
+                   [class.winner-progress]="card.isWinner"></div>
+            </div>
+          </div>
+        </mat-card-content>
+
+        <mat-card-actions>
+          <button mat-button color="primary" (click)="selectCard(playerCards.indexOf(card)); toggleViewMode()">
+            <mat-icon>zoom_in</mat-icon>
+            Ver Individual
+          </button>
+          <button mat-button color="accent" *ngIf="card.isWinner">
+            <mat-icon>celebration</mat-icon>
+            ¡Ganadora!
+          </button>
+        </mat-card-actions>
+      </mat-card>
+    </div>
+  </div>
+
+  <!-- Estadísticas del jugador -->
+  <div class="player-stats">
+    <mat-card>
+      <mat-card-header>
+        <mat-card-title>
+          <mat-icon>analytics</mat-icon>
+          Estadísticas de Juego
+        </mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="stats-grid">
+          <div class="stat-item">
+            <div class="stat-value">{{ getWinnerCardsCount() }}</div>
+            <div class="stat-label">Cartas Ganadoras</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-value">{{ getAverageProgress() }}%</div>
+            <div class="stat-label">Progreso Promedio</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-value">{{ getTotalMarkedNumbers() }}</div>
+            <div class="stat-label">Números Marcados</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-value">{{ drawnBalls.length }}</div>
+            <div class="stat-label">Números Cantados</div>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+
+  <!-- Números cantados -->
+  <div class="drawn-numbers" *ngIf="drawnBalls.length > 0">
+    <mat-card>
+      <mat-card-header>
+        <mat-card-title>
+          <mat-icon>record_voice_over</mat-icon>
+          Números Cantados ({{ drawnBalls.length }})
+        </mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="numbers-grid">
+          <mat-chip *ngFor="let ball of drawnBalls" 
+                   class="drawn-ball">
+            {{ ball }}
+          </mat-chip>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+</div>

@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy } from '@angular/core';
+import { Component, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
@@ -36,7 +36,8 @@ export class DashboardComponent {
     private apiService: ApiService,
     private authService: AuthService,
     private snackBar: MatSnackBar,
-    private router: Router
+    private router: Router,
+    private cdr: ChangeDetectorRef
   ) {
     this.rooms$ = this.apiService.getUserRooms();
   }
@@ -60,11 +61,12 @@ export class DashboardComponent {
   deleteRoom(roomId: string) {
     this.apiService.deleteRoom(roomId).subscribe({
       next: () => {
-        this.snackBar.open('Room deleted', 'Close', { duration: 3000 });
+        this.snackBar.open('Sala eliminada correctamente', 'Cerrar', { duration: 3000 });
         this.rooms$ = this.apiService.getUserRooms();
+        this.cdr.detectChanges();
       },
       error: (err: any) => {
-        this.snackBar.open('Failed to delete room', 'Close', { duration: 3000 });
+        this.snackBar.open('Error al eliminar la sala', 'Cerrar', { duration: 3000 });
       }
     });
   }

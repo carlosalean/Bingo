@@ -116,6 +116,8 @@ public class RoomService : IRoomService
         }
     }
 
+
+
     private static int GetPlayerCount(ICollection<BingoCard> cards)
     {
         return cards

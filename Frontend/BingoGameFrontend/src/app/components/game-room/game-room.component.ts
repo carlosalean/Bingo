@@ -10,6 +10,8 @@ import { MatInputModule } from '@angular/material/input';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { AdminTablesComponent } from '../admin-tables/admin-tables.component';
+import { PlayerCardsComponent } from '../player-cards/player-cards.component';
 
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatGridListModule } from '@angular/material/grid-list';
@@ -53,7 +55,9 @@ interface Message {
     MatSnackBarModule,
     MatProgressBarModule,
     MatGridListModule,
-    ReactiveFormsModule
+    ReactiveFormsModule,
+    AdminTablesComponent,
+    PlayerCardsComponent
   ],
   templateUrl: './game-room.component.html',
   styleUrls: ['./game-room.component.scss']
@@ -68,13 +72,17 @@ export class GameRoomComponent implements OnInit, OnDestroy {
   private snackBar = inject(MatSnackBar);
 
   roomId: string = '';
+  roomCode: string = '';
   drawnBalls: number[] = [];
   bingoType: 'SeventyFive' | 'Ninety' = 'SeventyFive';
   players: Player[] = [];
+  showAdminView: boolean = false;
+  adminPlayerCards: any[] = [];
+  playerCards: any[] = [];
+  gameStatus: string = 'waiting';
   messages: Message[] = [];
   messageControl = new FormControl('');
   isHost = false;
-  gameStatus = 'Waiting'; // Waiting, Started, Paused, Ended
 
   // Stub bingo card
   bingoCard: BingoCardCell[][] = [];
@@ -154,13 +162,36 @@ export class GameRoomComponent implements OnInit, OnDestroy {
   }
 
   loadRoomData(): void {
-    // Stub: load room info, players, game status
-    this.isHost = true; // Assume for now
+    if (this.roomId) {
+      this.apiService.getRoomById(this.roomId).subscribe({
+        next: (room) => {
+          if (room) {
+            this.roomCode = room.inviteCode || '';
+            this.isHost = room.hostId === this.authService.getCurrentUserId();
+            this.bingoType = room.type as 'SeventyFive' | 'Ninety';
+          }
+        },
+        error: (error) => {
+          console.error('Error loading room data:', error);
+          this.snackBar.open('Error al cargar los datos de la sala', 'Cerrar', { duration: 3000 });
+          // Fallback data
+          this.roomCode = 'ABC123';
+        }
+      });
+    }
+    
+    // Stub: load players and game status
     this.gameStatus = 'Waiting';
     this.players = [
       { username: 'Player1', marks: 0, totalCells: 24 },
       { username: 'Player2', marks: 5, totalCells: 24 }
     ];
+    
+    // Generate sample admin player cards
+    this.generateAdminPlayerCards();
+    
+    // Generate sample player cards for regular players
+    this.generatePlayerCards();
   }
 
 
@@ -283,5 +314,158 @@ export class GameRoomComponent implements OnInit, OnDestroy {
 
   goToDashboard(): void {
     this.router.navigate(['/dashboard']);
+  }
+
+  copyRoomCode(): void {
+    if (this.roomCode) {
+      navigator.clipboard.writeText(this.roomCode).then(() => {
+        this.snackBar.open('Código copiado al portapapeles', 'Cerrar', { duration: 2000 });
+      }).catch(() => {
+        this.snackBar.open('Error al copiar el código', 'Cerrar', { duration: 2000 });
+      });
+    }
+  }
+
+  getGameStatusText(): string {
+    switch (this.gameStatus) {
+      case 'Waiting': return 'Esperando';
+      case 'Started': return 'En Juego';
+      case 'Paused': return 'Pausado';
+      case 'Ended': return 'Terminado';
+      default: return 'Desconocido';
+    }
+  }
+
+  getPlayerCardPreview(player: Player): BingoCardCell[] {
+    // Generate a simplified preview of player's bingo card
+    // This is a stub - in real implementation, you'd get this from the API
+    const preview: BingoCardCell[] = [];
+    for (let i = 0; i < 25; i++) {
+      const isMarked = i < player.marks;
+      const number = i === 12 ? 0 : Math.floor(Math.random() * 75) + 1; // Free space at center
+      preview.push({
+        number,
+        marked: isMarked,
+        column: ['B', 'I', 'N', 'G', 'O'][i % 5]
+      });
+    }
+    return preview;
+  }
+
+  toggleAdminView(): void {
+    this.showAdminView = !this.showAdminView;
+  }
+
+  private generateAdminPlayerCards(): void {
+    const samplePlayers = [
+      { id: '1', name: 'Juan Pérez' },
+      { id: '2', name: 'María García' },
+      { id: '3', name: 'Carlos López' },
+      { id: '4', name: 'Ana Martínez' },
+      { id: '5', name: 'Luis Rodríguez' },
+      { id: '6', name: 'Carmen Sánchez' }
+    ];
+
+    this.adminPlayerCards = samplePlayers.map(player => ({
+      id: `card-${player.id}`,
+      playerId: player.id,
+      playerName: player.name,
+      numbers: this.generateBingoNumbers(),
+      markedNumbers: this.generateMarkedNumbers()
+    }));
+  }
+
+  private generateBingoNumbers(): number[][] {
+    const card: number[][] = [];
+    const ranges = this.bingoType === 'SeventyFive' 
+      ? [[1, 15], [16, 30], [31, 45], [46, 60], [61, 75]]
+      : [[1, 18], [19, 36], [37, 54], [55, 72], [73, 90]];
+
+    for (let col = 0; col < 5; col++) {
+      const column: number[] = [];
+      const [min, max] = ranges[col];
+      const availableNumbers = Array.from({ length: max - min + 1 }, (_, i) => min + i);
+      
+      for (let row = 0; row < 5; row++) {
+        if (row === 2 && col === 2) {
+          column.push(0); // Centro libre
+        } else {
+          const randomIndex = Math.floor(Math.random() * availableNumbers.length);
+          column.push(availableNumbers.splice(randomIndex, 1)[0]);
+        }
+      }
+      card.push(column);
+    }
+    return card;
+  }
+
+  private generateMarkedNumbers(): boolean[][] {
+    const marked: boolean[][] = [];
+    for (let col = 0; col < 5; col++) {
+      const column: boolean[] = [];
+      for (let row = 0; row < 5; row++) {
+        if (row === 2 && col === 2) {
+          column.push(true); // Centro siempre marcado
+        } else {
+          column.push(Math.random() < 0.3); // 30% probabilidad de estar marcado
+        }
+      }
+      marked.push(column);
+    }
+    return marked;
+  }
+
+  private generatePlayerCards(): void {
+    // Generar 3 cartas de ejemplo para el jugador
+    this.playerCards = [];
+    
+    for (let i = 1; i <= 3; i++) {
+      const card = {
+        id: `player-card-${i}`,
+        cardNumber: i,
+        numbers: this.generateBingoNumbers(),
+        markedNumbers: Array(5).fill(null).map(() => Array(5).fill(false)),
+        isWinner: false,
+        winningPattern: undefined
+      };
+      
+      // Marcar el espacio libre (centro)
+      card.markedNumbers[2][2] = true;
+      
+      // Marcar algunos números aleatoriamente para simular progreso
+      const markedCount = Math.floor(Math.random() * 8) + 2; // 2-9 números marcados
+      let marked = 0;
+      
+      while (marked < markedCount) {
+        const col = Math.floor(Math.random() * 5);
+        const row = Math.floor(Math.random() * 5);
+        
+        // No marcar el espacio libre nuevamente
+        if (row === 2 && col === 2) continue;
+        
+        if (!card.markedNumbers[col][row]) {
+          card.markedNumbers[col][row] = true;
+          marked++;
+        }
+      }
+      
+      this.playerCards.push(card);
+    }
+    
+    // Generar algunos números cantados de ejemplo
+    this.drawnBalls = [];
+    const drawnCount = Math.floor(Math.random() * 15) + 5; // 5-19 números cantados
+    
+    while (this.drawnBalls.length < drawnCount) {
+      const number = Math.floor(Math.random() * 75) + 1;
+      if (!this.drawnBalls.includes(number)) {
+        this.drawnBalls.push(number);
+      }
+    }
+    
+    this.drawnBalls.sort((a, b) => a - b);
+    
+    // Simular estado del juego
+    this.gameStatus = 'playing';
   }
 }

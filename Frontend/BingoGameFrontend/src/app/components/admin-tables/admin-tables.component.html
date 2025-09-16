@@ -1,0 +1,127 @@
+<div class="admin-tables-container">
+  <div class="tables-header">
+    <h2>
+      <mat-icon>visibility</mat-icon>
+      Vista de Administrador - Tablas de Jugadores
+    </h2>
+    <p>Monitoreo en tiempo real de {{ playerCards.length }} jugadores</p>
+  </div>
+
+  <div class="tables-grid">
+    <mat-card *ngFor="let card of playerCards; trackBy: trackByCardId" class="player-card">
+      <mat-card-header>
+        <div mat-card-avatar class="player-avatar">
+          <mat-icon>person</mat-icon>
+        </div>
+        <mat-card-title>{{ card.playerName }}</mat-card-title>
+        <mat-card-subtitle>
+          <mat-chip>
+            {{ getPlayerStatus(card) }}
+          </mat-chip>
+        </mat-card-subtitle>
+      </mat-card-header>
+
+      <mat-card-content>
+        <div class="bingo-table">
+          <div class="table-header">
+            <div class="header-cell">B</div>
+            <div class="header-cell">I</div>
+            <div class="header-cell">N</div>
+            <div class="header-cell">G</div>
+            <div class="header-cell">O</div>
+          </div>
+          
+          <div class="table-body">
+            <div *ngFor="let row of [0,1,2,3,4]; let rowIndex = index" class="table-row">
+              <div *ngFor="let col of [0,1,2,3,4]; let colIndex = index" 
+                   class="table-cell"
+                   [class.marked]="card.markedNumbers[colIndex][rowIndex]"
+                   [class.drawn]="isNumberDrawn(card.numbers[colIndex][rowIndex])"
+                   [class.free-space]="rowIndex === 2 && colIndex === 2">
+                <span *ngIf="!(rowIndex === 2 && colIndex === 2); else freeSpace">
+                  {{ card.numbers[colIndex][rowIndex] }}
+                </span>
+                <ng-template #freeSpace>
+                  <mat-icon class="free-icon">star</mat-icon>
+                </ng-template>
+                
+                <!-- Indicador de número cantado -->
+                <div *ngIf="isNumberDrawn(card.numbers[colIndex][rowIndex]) && card.markedNumbers[colIndex][rowIndex]" 
+                     class="drawn-indicator">
+                  <mat-icon>check_circle</mat-icon>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Patrones ganadores -->
+        <div *ngIf="checkForWinningPatterns(card).length > 0" class="winning-patterns">
+          <div class="pattern-header">
+            <mat-icon color="accent">emoji_events</mat-icon>
+            <strong>Patrones Ganadores:</strong>
+          </div>
+          <div class="patterns-list">
+            <mat-chip *ngFor="let pattern of checkForWinningPatterns(card)">
+              {{ pattern }}
+            </mat-chip>
+          </div>
+        </div>
+
+        <!-- Progreso de la carta -->
+        <div class="card-progress">
+          <div class="progress-info">
+            <span>Progreso: {{ getCardProgress(card) }}%</span>
+            <mat-icon *ngIf="getCardProgress(card) >= 80" color="warn">warning</mat-icon>
+          </div>
+          <div class="progress-bar">
+            <div class="progress-fill" [style.width.%]="getCardProgress(card)"></div>
+          </div>
+        </div>
+      </mat-card-content>
+
+      <mat-card-actions>
+        <button mat-button color="primary">
+          <mat-icon>zoom_in</mat-icon>
+          Ver Detalle
+        </button>
+        <button mat-button color="accent" *ngIf="checkForWinningPatterns(card).length > 0">
+          <mat-icon>notifications</mat-icon>
+          Notificar
+        </button>
+      </mat-card-actions>
+    </mat-card>
+  </div>
+
+  <!-- Estadísticas generales -->
+  <div class="stats-panel">
+    <mat-card>
+      <mat-card-header>
+        <mat-card-title>
+          <mat-icon>analytics</mat-icon>
+          Estadísticas de la Sala
+        </mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="stats-grid">
+          <div class="stat-item">
+            <div class="stat-value">{{ playerCards.length }}</div>
+            <div class="stat-label">Jugadores Activos</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-value">{{ drawnBalls.length }}</div>
+            <div class="stat-label">Números Cantados</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-value">{{ getWinnersCount() }}</div>
+            <div class="stat-label">Ganadores</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-value">{{ getAverageProgress() }}%</div>
+            <div class="stat-label">Progreso Promedio</div>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+</div>
