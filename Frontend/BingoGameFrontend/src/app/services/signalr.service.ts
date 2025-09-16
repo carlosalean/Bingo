@@ -6,19 +6,39 @@ import { AuthService } from './auth.service';
   providedIn: 'root'
 })
 export class SignalRService {
-  private hubUrl = 'http://localhost:5001/gamehub';
+  private hubUrl = 'http://localhost:5086/gamehub';
   public connection: HubConnection;
 
   constructor(private auth: AuthService) {
     this.connection = new HubConnectionBuilder()
       .withUrl(this.hubUrl, {
-        accessTokenFactory: () => this.auth.getToken() ?? ''
+        accessTokenFactory: () => {
+          const token = this.auth.getToken();
+          return token ?? '';
+        },
+        transport: 1 // WebSockets
       })
       .withAutomaticReconnect()
       .build();
   }
 
-  public start(): Promise<void> {
+  public start(roomId?: string): Promise<void> {
+    // Si se proporciona un roomId, recrear la conexión con el query parameter
+    if (roomId && roomId.trim() !== '') {
+      const hubUrlWithRoom = `${this.hubUrl}?roomId=${encodeURIComponent(roomId)}`;
+      
+      this.connection = new HubConnectionBuilder()
+        .withUrl(hubUrlWithRoom, {
+          accessTokenFactory: () => {
+            const token = this.auth.getToken();
+            return token ?? '';
+          },
+          transport: 1 // WebSockets
+        })
+        .withAutomaticReconnect()
+        .build();
+    }
+    
     return this.connection.start().catch(err => {
       console.error('SignalR connection error:', err);
       throw err;
@@ -96,7 +116,8 @@ export class SignalRService {
   }
 
   public joinRoom(roomId: string): Promise<void> {
-    return this.connection.invoke('JoinRoom', roomId).catch(err => {
+    const token = localStorage.getItem('token');
+    return this.connection.invoke('JoinRoom', roomId, token).catch((err) => {
       console.error('Error joining room:', err);
       throw err;
     });

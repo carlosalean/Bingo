@@ -1,0 +1,124 @@
+<div class="invitation-manager p-6 bg-white dark:bg-gray-800 rounded-lg shadow-lg">
+  <!-- Header -->
+  <div class="flex items-center justify-between mb-6">
+    <div class="flex items-center gap-3">
+      <mat-icon class="text-2xl text-blue-600 dark:text-blue-400">mail</mat-icon>
+      <h3 class="text-xl font-bold text-gray-800 dark:text-gray-200">Gestión de Invitaciones</h3>
+    </div>
+    <span class="text-sm text-gray-500 dark:text-gray-400">{{ invitations.length }} invitaciones</span>
+  </div>
+
+  <!-- Send Invitation Form -->
+  <mat-card class="mb-6 bg-gray-50 dark:bg-gray-700">
+    <mat-card-header>
+      <mat-card-title class="text-lg text-gray-800 dark:text-gray-200">Enviar Nueva Invitación</mat-card-title>
+    </mat-card-header>
+    <mat-card-content class="pt-4">
+      <div class="invitation-form-container">
+        <mat-form-field class="email-field" appearance="fill">
+          <mat-label>Email del invitado</mat-label>
+          <input 
+            matInput 
+            type="email" 
+            [(ngModel)]="newInvitationEmail"
+            placeholder="ejemplo@correo.com"
+            [disabled]="isLoading"
+            (keyup.enter)="sendInvitation()"
+          >
+          <mat-icon matSuffix>email</mat-icon>
+        </mat-form-field>
+        <button 
+          mat-raised-button 
+          color="primary"
+          (click)="sendInvitation()"
+          [disabled]="isLoading || !isValidEmail(newInvitationEmail)"
+          class="send-button"
+        >
+          <mat-icon class="mr-2">send</mat-icon>
+          {{ isLoading ? 'Enviando...' : 'Enviar Invitación' }}
+        </button>
+      </div>
+    </mat-card-content>
+  </mat-card>
+
+  <!-- Invitations List -->
+  <mat-card>
+    <mat-card-header>
+      <mat-card-title class="text-lg text-gray-800 dark:text-gray-200">Invitaciones Enviadas</mat-card-title>
+    </mat-card-header>
+    <mat-card-content class="pt-4">
+      <div *ngIf="invitations.length === 0 && !isLoading" class="text-center py-8">
+        <mat-icon class="text-6xl text-gray-400 dark:text-gray-500 mb-4">mail_outline</mat-icon>
+        <p class="text-gray-500 dark:text-gray-400 text-lg">No hay invitaciones enviadas</p>
+        <p class="text-gray-400 dark:text-gray-500 text-sm">Envía tu primera invitación usando el formulario de arriba</p>
+      </div>
+
+      <div *ngIf="isLoading" class="text-center py-8">
+        <mat-icon class="text-4xl text-blue-600 dark:text-blue-400 animate-spin">refresh</mat-icon>
+        <p class="text-gray-500 dark:text-gray-400 mt-2">Cargando invitaciones...</p>
+      </div>
+
+      <div *ngIf="invitations.length > 0" class="space-y-4">
+        <div 
+          *ngFor="let invitation of invitations; trackBy: trackByInvitationId" 
+          class="border border-gray-200 dark:border-gray-600 rounded-lg p-4 hover:shadow-md transition-shadow"
+        >
+          <div class="flex items-center justify-between">
+            <div class="flex-1">
+              <div class="flex items-center gap-3 mb-2">
+                <mat-icon class="text-gray-600 dark:text-gray-400">person</mat-icon>
+                <span class="font-medium text-gray-800 dark:text-gray-200">{{ invitation.email }}</span>
+                <span 
+                  class="px-2 py-1 rounded-full text-xs font-medium"
+                  [ngClass]="getStatusClass(invitation)"
+                >
+                  {{ getInvitationStatus(invitation) }}
+                </span>
+              </div>
+              
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-gray-600 dark:text-gray-400">
+                <div class="flex items-center gap-2">
+                  <mat-icon class="text-sm">schedule</mat-icon>
+                  <span>Enviado: {{ formatDate(invitation.createdAt) }}</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <mat-icon class="text-sm">event</mat-icon>
+                  <span>Expira: {{ formatDate(invitation.expiresAt) }}</span>
+                </div>
+                <div *ngIf="invitation.isUsed && invitation.usedAt" class="flex items-center gap-2">
+                  <mat-icon class="text-sm">check_circle</mat-icon>
+                  <span>Usado: {{ formatDate(invitation.usedAt) }}</span>
+                </div>
+                <div *ngIf="invitation.guestName" class="flex items-center gap-2">
+                  <mat-icon class="text-sm">badge</mat-icon>
+                  <span>Nombre: {{ invitation.guestName }}</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="flex gap-2 ml-4">
+              <button 
+                mat-icon-button 
+                color="primary"
+                (click)="copyInvitationLink(invitation.id)"
+                matTooltip="Copiar enlace de invitación"
+                [disabled]="getInvitationStatus(invitation) === 'Expirado'"
+              >
+                <mat-icon>link</mat-icon>
+              </button>
+              
+              <button 
+                mat-icon-button 
+                color="warn"
+                (click)="deleteInvitation(invitation.id)"
+                matTooltip="Eliminar invitación"
+              >
+                <mat-icon>delete</mat-icon>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </mat-card-content>
+  </mat-card>
+</div>

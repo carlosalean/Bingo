@@ -55,7 +55,7 @@ export class DashboardComponent {
   }
 
   enterRoom(roomId: string) {
-    // Navigate to game room
+    this.router.navigate(['/game', roomId]);
   }
 
   deleteRoom(roomId: string) {

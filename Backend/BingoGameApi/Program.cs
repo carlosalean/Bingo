@@ -26,9 +26,11 @@ builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(policy =>
     {
-        policy.AllowAnyOrigin()
+        policy.WithOrigins("http://localhost:4200", "file://")
               .AllowAnyMethod()
-              .AllowAnyHeader();
+              .AllowAnyHeader()
+              .AllowCredentials()
+              .SetIsOriginAllowed(origin => true); // Allow any origin for development
     });
 });
 
@@ -56,9 +58,16 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             {
                 var accessToken = context.Request.Query["access_token"];
                 var path = context.HttpContext.Request.Path;
+                Console.WriteLine($"SignalR auth - Path: {path}, Token present: {!string.IsNullOrEmpty(accessToken)}");
+                
                 if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments("/gamehub"))
                 {
+                    Console.WriteLine("Setting token for SignalR connection");
                     context.Token = accessToken;
+                }
+                else if (path.StartsWithSegments("/gamehub"))
+                {
+                    Console.WriteLine("No access token found for SignalR connection");
                 }
                 return Task.CompletedTask;
             }
@@ -72,6 +81,8 @@ builder.Services.AddAuthorization();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IRoomService, RoomService>();
 builder.Services.AddScoped<IGameService, GameService>();
+builder.Services.AddScoped<IInvitationService, InvitationService>();
+builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddSignalR();
 
 var app = builder.Build();

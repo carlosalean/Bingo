@@ -180,7 +180,7 @@ public class GameService : IGameService
         }
         else
         {
-            throw new InvalidOperationException("Game is already active");
+            return session.Id;
         }
 
         await _context.SaveChangesAsync();

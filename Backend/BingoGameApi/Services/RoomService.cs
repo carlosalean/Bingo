@@ -411,6 +411,34 @@ public class RoomService : IRoomService
         }
     }
 
+    public async Task<RoomDto?> GetRoomByIdAsync(string roomId)
+    {
+        try
+        {
+            if (!Guid.TryParse(roomId, out var roomGuid))
+            {
+                return null;
+            }
+
+            var room = await _context.Rooms
+                .Include(r => r.Cards)
+                .FirstOrDefaultAsync(r => r.Id == roomGuid);
+
+            if (room == null)
+            {
+                return null;
+            }
+
+            var currentPlayerCount = GetPlayerCount(room.Cards);
+            return MapToDto(room, currentPlayerCount);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error in GetRoomByIdAsync: {ex.Message}");
+            return null;
+        }
+    }
+
     public async Task<List<RoomDto>> GetPublicRoomsAsync()
     {
         try
@@ -426,6 +454,37 @@ public class RoomService : IRoomService
         {
             Console.WriteLine($"Error in GetPublicRoomsAsync: {ex.Message}");
             return new List<RoomDto>();
+        }
+    }
+
+    public async Task<List<BingoCardDto>> GetRoomPlayersAsync(string roomId)
+    {
+        try
+        {
+            if (!Guid.TryParse(roomId, out var roomGuid))
+            {
+                return new List<BingoCardDto>();
+            }
+
+            var cards = await _context.BingoCards
+                .Include(c => c.Player)
+                .Where(c => c.RoomId == roomGuid)
+                .ToListAsync();
+
+            return cards.Select(card => new BingoCardDto
+            {
+                Id = card.Id,
+                Numbers = card.Numbers,
+                Marks = card.Marks,
+                Type = card.Type,
+                PlayerId = card.PlayerId,
+                PlayerName = card.Player?.Username ?? "Guest"
+            }).ToList();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error in GetRoomPlayersAsync: {ex.Message}");
+            return new List<BingoCardDto>();
         }
     }
 }

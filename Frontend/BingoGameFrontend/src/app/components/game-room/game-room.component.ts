@@ -79,7 +79,7 @@ export class GameRoomComponent implements OnInit, OnDestroy {
   showAdminView: boolean = false;
   adminPlayerCards: any[] = [];
   playerCards: any[] = [];
-  gameStatus: string = 'waiting';
+  gameStatus: string = 'Waiting';
   messages: Message[] = [];
   messageControl = new FormControl('');
   isHost = false;
@@ -89,20 +89,29 @@ export class GameRoomComponent implements OnInit, OnDestroy {
   is75Ball = true;
 
   ngOnInit(): void {
-    this.roomId = this.route.snapshot.paramMap.get('id') || '';
+    console.log('GameRoomComponent ngOnInit started');
+    this.roomId = this.route.snapshot.paramMap.get('roomId') || '';
+    console.log('Room ID:', this.roomId);
+    
     if (!this.roomId) {
+      console.log('No room ID found, redirecting to dashboard');
       this.router.navigate(['/dashboard']);
       return;
     }
 
     if (!this.authService.isLoggedIn()) {
+      console.log('User not logged in, redirecting to login');
       this.router.navigate(['/login']);
       return;
     }
 
+    console.log('Loading room data...');
     this.loadRoomData();
+    console.log('Generating bingo card...');
     this.generateBingoCard();
+    console.log('Initializing SignalR...');
     this.initSignalR();
+    console.log('GameRoomComponent ngOnInit completed');
   }
 
   ngOnDestroy(): void {
@@ -110,12 +119,26 @@ export class GameRoomComponent implements OnInit, OnDestroy {
   }
 
   private initSignalR(): void {
-    this.signalr.start().then(() => {
-      this.signalr.joinRoom(this.roomId);
+    console.log('Iniciando conexión SignalR...');
+    this.signalr.start(this.roomId).then(() => {
+      console.log('Conexión SignalR establecida exitosamente');
+      console.log('Intentando unirse a la sala:', this.roomId);
+      
+      this.signalr.joinRoom(this.roomId).then(() => {
+        console.log('Unido a la sala exitosamente:', this.roomId);
+      }).catch(error => {
+        console.error('Error joining room:', error);
+        console.error('Error details:', JSON.stringify(error));
+        this.snackBar.open('Error al unirse a la sala', 'Cerrar', { duration: 3000 });
+      });
 
       // Get initial drawn balls
       this.signalr.getDrawnBalls(this.roomId).then((data: { balls?: number[] }) => {
-        this.drawnBalls = data.balls || [];
+        this.drawnBalls = data?.balls || [];
+        this.updateMarkedCells();
+      }).catch((error) => {
+        console.error('Error getting drawn balls:', error);
+        this.drawnBalls = [];
         this.updateMarkedCells();
       });
 
@@ -162,26 +185,62 @@ export class GameRoomComponent implements OnInit, OnDestroy {
   }
 
   loadRoomData(): void {
+    console.log('🔄 Starting loadRoomData');
+    console.log('🔍 Room ID:', this.roomId);
+    console.log('🔍 Current User ID:', this.authService.getCurrentUserId());
+    
     if (this.roomId) {
       this.apiService.getRoomById(this.roomId).subscribe({
         next: (room) => {
-          if (room) {
-            this.roomCode = room.inviteCode || '';
-            this.isHost = room.hostId === this.authService.getCurrentUserId();
-            this.bingoType = room.type as 'SeventyFive' | 'Ninety';
-          }
+          console.log('✅ Room data loaded successfully:', room);
+          console.log('📊 Room details:', {
+             roomCode: room?.inviteCode,
+             hostId: room?.hostId,
+             bingoType: room?.type
+           });
+           
+           if (room) {
+             this.roomCode = room.inviteCode || '';
+             this.isHost = room.hostId === this.authService.getCurrentUserId();
+             this.bingoType = room.type as 'SeventyFive' | 'Ninety';
+             this.gameStatus = 'Waiting'; // Default status since RoomDto doesn't have status
+           }
+          
+          console.log('🎯 Component state after loading:', {
+            roomCode: this.roomCode,
+            gameStatus: this.gameStatus,
+            isHost: this.isHost,
+            bingoType: this.bingoType
+          });
         },
         error: (error) => {
-          console.error('Error loading room data:', error);
+          console.error('❌ Error loading room data:', error);
+          console.error('❌ Error details:', {
+            status: error.status,
+            message: error.message,
+            url: error.url
+          });
+          
           this.snackBar.open('Error al cargar los datos de la sala', 'Cerrar', { duration: 3000 });
-          // Fallback data
+          
+          // Datos de fallback para desarrollo
+          console.log('🔧 Using fallback data');
           this.roomCode = 'ABC123';
+          this.gameStatus = 'Waiting';
+          this.isHost = true;
+          this.bingoType = 'SeventyFive';
+          
+          console.log('🎯 Component state after fallback:', {
+            roomCode: this.roomCode,
+            gameStatus: this.gameStatus,
+            isHost: this.isHost,
+            bingoType: this.bingoType
+          });
         }
       });
     }
     
     // Stub: load players and game status
-    this.gameStatus = 'Waiting';
     this.players = [
       { username: 'Player1', marks: 0, totalCells: 24 },
       { username: 'Player2', marks: 5, totalCells: 24 }
@@ -268,8 +327,22 @@ export class GameRoomComponent implements OnInit, OnDestroy {
     this.apiService.postStartGame(this.roomId).subscribe({
       next: () => {
         this.gameStatus = 'Started';
+        
+        // Si es el host/creador, mostrar la vista de administración
+        if (this.isHost) {
+          this.showAdminView = true;
+          this.generateAdminPlayerCards();
+        } else {
+          // Si es jugador, generar sus cartas y mostrar mensaje de espera
+          this.generatePlayerCards();
+        }
       },
-      error: () => {}
+      error: (error) => {
+        console.error('Error starting game:', error);
+        this.snackBar.open('Error al iniciar el juego', 'Cerrar', {
+          duration: 3000
+        });
+      }
     });
   }
 
@@ -328,12 +401,16 @@ export class GameRoomComponent implements OnInit, OnDestroy {
 
   getGameStatusText(): string {
     switch (this.gameStatus) {
-      case 'Waiting': return 'Esperando';
-      case 'Started': return 'En Juego';
+      case 'Waiting': return 'Esperando jugadores';
+      case 'Started': return 'En progreso';
       case 'Paused': return 'Pausado';
-      case 'Ended': return 'Terminado';
+      case 'Ended': return 'Finalizado';
       default: return 'Desconocido';
     }
+  }
+
+  getCurrentTime(): string {
+    return new Date().toLocaleTimeString();
   }
 
   getPlayerCardPreview(player: Player): BingoCardCell[] {
@@ -416,7 +493,7 @@ export class GameRoomComponent implements OnInit, OnDestroy {
   }
 
   private generatePlayerCards(): void {
-    // Generar 3 cartas de ejemplo para el jugador
+    // Generar 3 cartas para el jugador
     this.playerCards = [];
     
     for (let i = 1; i <= 3; i++) {
@@ -429,43 +506,13 @@ export class GameRoomComponent implements OnInit, OnDestroy {
         winningPattern: undefined
       };
       
-      // Marcar el espacio libre (centro)
+      // Marcar solo el espacio libre (centro)
       card.markedNumbers[2][2] = true;
-      
-      // Marcar algunos números aleatoriamente para simular progreso
-      const markedCount = Math.floor(Math.random() * 8) + 2; // 2-9 números marcados
-      let marked = 0;
-      
-      while (marked < markedCount) {
-        const col = Math.floor(Math.random() * 5);
-        const row = Math.floor(Math.random() * 5);
-        
-        // No marcar el espacio libre nuevamente
-        if (row === 2 && col === 2) continue;
-        
-        if (!card.markedNumbers[col][row]) {
-          card.markedNumbers[col][row] = true;
-          marked++;
-        }
-      }
       
       this.playerCards.push(card);
     }
     
-    // Generar algunos números cantados de ejemplo
-    this.drawnBalls = [];
-    const drawnCount = Math.floor(Math.random() * 15) + 5; // 5-19 números cantados
-    
-    while (this.drawnBalls.length < drawnCount) {
-      const number = Math.floor(Math.random() * 75) + 1;
-      if (!this.drawnBalls.includes(number)) {
-        this.drawnBalls.push(number);
-      }
-    }
-    
-    this.drawnBalls.sort((a, b) => a - b);
-    
-    // Simular estado del juego
-    this.gameStatus = 'playing';
+    // No generar números cantados automáticamente al iniciar
+    // Los números se cantarán cuando el administrador saque bolas
   }
 }

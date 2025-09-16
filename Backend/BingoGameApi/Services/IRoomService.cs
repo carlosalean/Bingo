@@ -18,5 +18,7 @@ public interface IRoomService
     Task<RoomDto?> JoinRoomByCodeAsync(string roomCode, Guid userId);
     Task<RoomDto?> JoinRoomByIdAsync(string roomId, Guid userId);
     Task<RoomDto?> GetRoomByCodeAsync(string roomCode);
+    Task<RoomDto?> GetRoomByIdAsync(string roomId);
     Task<List<RoomDto>> GetPublicRoomsAsync();
+    Task<List<BingoCardDto>> GetRoomPlayersAsync(string roomId);
 }

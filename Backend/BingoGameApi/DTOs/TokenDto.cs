@@ -7,4 +7,5 @@ public class TokenDto
 {
     public string Token { get; set; } = string.Empty;
     public UserDto User { get; set; } = null!;
+    public DateTime ExpiresIn { get; set; }
 }

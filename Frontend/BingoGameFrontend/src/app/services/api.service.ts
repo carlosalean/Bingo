@@ -32,6 +32,20 @@ export interface DrawnBallsDto {
   balls: number[];
 }
 
+export interface BingoCardDto {
+  id: string;
+  numbers: number[];
+  marks: { [key: string]: boolean };
+  type: 'SeventyFive' | 'Ninety';
+  playerId?: string;
+  playerName?: string;
+}
+
+export interface RoomPlayersDto {
+  roomId: string;
+  players: BingoCardDto[];
+}
+
 export interface RoomDto {
   id: string;
   name: string;
@@ -48,7 +62,7 @@ export interface RoomDto {
   providedIn: 'root'
 })
 export class ApiService {
-  private baseUrl = 'https://localhost:7083/api';
+  private baseUrl = 'http://localhost:5086/api';
   private headers = new HttpHeaders({ 'Content-Type': 'application/json' });
 
   constructor(private http: HttpClient) { }
@@ -131,5 +145,9 @@ export class ApiService {
 
   getRoomById(roomId: string): Observable<RoomDto> {
     return this.http.get<RoomDto>(`${this.baseUrl}/room/${roomId}`, { headers: this.getAuthHeaders() });
+  }
+
+  getRoomPlayers(roomId: string): Observable<BingoCardDto[]> {
+    return this.http.get<BingoCardDto[]>(`${this.baseUrl}/room/${roomId}/players`, { headers: this.getAuthHeaders() });
   }
 }

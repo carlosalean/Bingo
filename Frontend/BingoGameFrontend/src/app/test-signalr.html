@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test SignalR Connection</title>
+    <script src="https://unpkg.com/@microsoft/signalr@latest/dist/browser/signalr.min.js"></script>
+</head>
+<body>
+    <h1>Test SignalR Connection</h1>
+    <div id="status">Connecting...</div>
+    <div id="logs"></div>
+    
+    <script>
+        const connection = new signalR.HubConnectionBuilder()
+            .withUrl("http://localhost:5086/gamehub", {
+                accessTokenFactory: () => {
+                    const token = localStorage.getItem('token');
+                    console.log('Token from localStorage:', token ? 'Present' : 'Not found');
+                    return token || '';
+                }
+            })
+            .withAutomaticReconnect()
+            .build();
+
+        const statusDiv = document.getElementById('status');
+        const logsDiv = document.getElementById('logs');
+        
+        function addLog(message) {
+            const p = document.createElement('p');
+            p.textContent = new Date().toLocaleTimeString() + ': ' + message;
+            logsDiv.appendChild(p);
+            console.log(message);
+        }
+
+        connection.start().then(() => {
+            statusDiv.textContent = 'Connected!';
+            statusDiv.style.color = 'green';
+            addLog('SignalR connection established successfully');
+            
+            // Test JoinRoom method
+            connection.invoke('JoinRoom', 'test-room-id').then(() => {
+                addLog('JoinRoom invoked successfully');
+            }).catch(err => {
+                addLog('JoinRoom error: ' + JSON.stringify(err));
+            });
+            
+        }).catch(err => {
+            statusDiv.textContent = 'Connection failed!';
+            statusDiv.style.color = 'red';
+            addLog('SignalR connection error: ' + JSON.stringify(err));
+        });
+
+        connection.onclose((error) => {
+            statusDiv.textContent = 'Disconnected';
+            statusDiv.style.color = 'orange';
+            addLog('Connection closed: ' + (error ? JSON.stringify(error) : 'No error'));
+        });
+    </script>
+</body>
+</html>

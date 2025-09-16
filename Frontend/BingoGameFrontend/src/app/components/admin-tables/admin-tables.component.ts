@@ -1,17 +1,21 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatCardModule } from '@angular/material/card';
 import { MatGridListModule } from '@angular/material/grid-list';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatChipsModule } from '@angular/material/chips';
+import { ApiService, BingoCardDto } from '../../services/api.service';
+import { InvitationManagerComponent } from '../invitation-manager/invitation-manager.component';
+import { Subscription } from 'rxjs';
 
 export interface BingoCard {
   id: string;
   playerId: string;
   playerName: string;
-  numbers: number[][];
-  markedNumbers: boolean[][];
+  numbers: number[];
+  marks: { [key: string]: boolean };
+  type: 'SeventyFive' | 'Ninety';
   isWinner?: boolean;
 }
 
@@ -24,83 +28,53 @@ export interface BingoCard {
     MatGridListModule,
     MatIconModule,
     MatButtonModule,
-    MatChipsModule
+    MatChipsModule,
+    InvitationManagerComponent
   ],
   templateUrl: './admin-tables.component.html',
   styleUrls: ['./admin-tables.component.scss']
 })
-export class AdminTablesComponent implements OnInit {
+export class AdminTablesComponent implements OnInit, OnDestroy {
   @Input() playerCards: BingoCard[] = [];
   @Input() drawnBalls: number[] = [];
   @Input() bingoType: 'SeventyFive' | 'Ninety' = 'SeventyFive';
+  @Input() roomId: string = '';
 
-  constructor() { }
+  private subscription: Subscription = new Subscription();
+
+  constructor(private apiService: ApiService) { }
 
   ngOnInit(): void {
-    // Generar datos de ejemplo si no hay cartas
-    if (this.playerCards.length === 0) {
-      this.generateSampleCards();
+    if (this.roomId) {
+      this.loadRoomPlayers();
     }
   }
 
-  private generateSampleCards(): void {
-    const samplePlayers = [
-      { id: '1', name: 'Juan Pérez' },
-      { id: '2', name: 'María García' },
-      { id: '3', name: 'Carlos López' },
-      { id: '4', name: 'Ana Martínez' },
-      { id: '5', name: 'Luis Rodríguez' },
-      { id: '6', name: 'Carmen Sánchez' }
-    ];
-
-    this.playerCards = samplePlayers.map(player => ({
-      id: `card-${player.id}`,
-      playerId: player.id,
-      playerName: player.name,
-      numbers: this.generateBingoNumbers(),
-      markedNumbers: this.generateMarkedNumbers()
-    }));
+  ngOnDestroy(): void {
+    this.subscription.unsubscribe();
   }
 
-  private generateBingoNumbers(): number[][] {
-    const card: number[][] = [];
-    const ranges = this.bingoType === 'SeventyFive' 
-      ? [[1, 15], [16, 30], [31, 45], [46, 60], [61, 75]]
-      : [[1, 18], [19, 36], [37, 54], [55, 72], [73, 90]];
-
-    for (let col = 0; col < 5; col++) {
-      const column: number[] = [];
-      const [min, max] = ranges[col];
-      const availableNumbers = Array.from({ length: max - min + 1 }, (_, i) => min + i);
-      
-      for (let row = 0; row < 5; row++) {
-        if (row === 2 && col === 2) {
-          column.push(0); // Centro libre
-        } else {
-          const randomIndex = Math.floor(Math.random() * availableNumbers.length);
-          column.push(availableNumbers.splice(randomIndex, 1)[0]);
-        }
+  private loadRoomPlayers(): void {
+    const sub = this.apiService.getRoomPlayers(this.roomId).subscribe({
+      next: (cards: BingoCardDto[]) => {
+        this.playerCards = cards.map(card => ({
+          id: card.id,
+          playerId: card.playerId || 'guest',
+          playerName: card.playerName || 'Guest',
+          numbers: card.numbers,
+          marks: card.marks,
+          type: card.type
+        }));
+      },
+      error: (error) => {
+        console.error('Error loading room players:', error);
+        this.playerCards = [];
       }
-      card.push(column);
-    }
-    return card;
+    });
+    this.subscription.add(sub);
   }
 
-  private generateMarkedNumbers(): boolean[][] {
-    const marked: boolean[][] = [];
-    for (let col = 0; col < 5; col++) {
-      const column: boolean[] = [];
-      for (let row = 0; row < 5; row++) {
-        if (row === 2 && col === 2) {
-          column.push(true); // Centro siempre marcado
-        } else {
-          column.push(Math.random() < 0.3); // 30% probabilidad de estar marcado
-        }
-      }
-      marked.push(column);
-    }
-    return marked;
-  }
+
 
   isNumberDrawn(number: number): boolean {
     return this.drawnBalls.includes(number);
@@ -108,14 +82,11 @@ export class AdminTablesComponent implements OnInit {
 
   getCardProgress(card: BingoCard): number {
     let markedCount = 0;
-    let totalCount = 0;
+    const totalCount = 25;
     
-    for (let col = 0; col < 5; col++) {
-      for (let row = 0; row < 5; row++) {
-        totalCount++;
-        if (card.markedNumbers[col][row]) {
-          markedCount++;
-        }
+    for (let i = 0; i < totalCount; i++) {
+      if (card.marks[i.toString()]) {
+        markedCount++;
       }
     }
     
@@ -124,32 +95,73 @@ export class AdminTablesComponent implements OnInit {
 
   checkForWinningPatterns(card: BingoCard): string[] {
     const patterns: string[] = [];
-    const marked = card.markedNumbers;
+    const marks = card.marks;
 
     // Verificar líneas horizontales
     for (let row = 0; row < 5; row++) {
-      if (marked.every(col => col[row])) {
+      let isComplete = true;
+      for (let col = 0; col < 5; col++) {
+        const index = row * 5 + col;
+        if (!marks[index.toString()]) {
+          isComplete = false;
+          break;
+        }
+      }
+      if (isComplete) {
         patterns.push(`Línea horizontal ${row + 1}`);
       }
     }
 
     // Verificar líneas verticales
     for (let col = 0; col < 5; col++) {
-      if (marked[col].every(cell => cell)) {
+      let isComplete = true;
+      for (let row = 0; row < 5; row++) {
+        const index = row * 5 + col;
+        if (!marks[index.toString()]) {
+          isComplete = false;
+          break;
+        }
+      }
+      if (isComplete) {
         patterns.push(`Línea vertical ${col + 1}`);
       }
     }
 
-    // Verificar diagonales
-    if (marked.every((col, index) => col[index])) {
+    // Verificar diagonal principal
+    let diagonalComplete = true;
+    for (let i = 0; i < 5; i++) {
+      const index = i * 5 + i;
+      if (!marks[index.toString()]) {
+        diagonalComplete = false;
+        break;
+      }
+    }
+    if (diagonalComplete) {
       patterns.push('Diagonal principal');
     }
-    if (marked.every((col, index) => col[4 - index])) {
+
+    // Verificar diagonal secundaria
+    diagonalComplete = true;
+    for (let i = 0; i < 5; i++) {
+      const index = i * 5 + (4 - i);
+      if (!marks[index.toString()]) {
+        diagonalComplete = false;
+        break;
+      }
+    }
+    if (diagonalComplete) {
       patterns.push('Diagonal secundaria');
     }
 
     // Verificar cartón lleno
-    if (marked.every(col => col.every(cell => cell))) {
+    let isFullCard = true;
+    for (let i = 0; i < 25; i++) {
+      if (!marks[i.toString()]) {
+        isFullCard = false;
+        break;
+      }
+    }
+    if (isFullCard) {
       patterns.push('Cartón lleno');
     }
 
@@ -193,5 +205,31 @@ export class AdminTablesComponent implements OnInit {
     );
     
     return Math.round(totalProgress / this.playerCards.length);
+  }
+
+  // Métodos auxiliares para trabajar con la estructura de datos plana
+  getNumberAt(card: BingoCard, row: number, col: number): number {
+    const index = row * 5 + col;
+    return card.numbers[index] || 0;
+  }
+
+  isMarkedAt(card: BingoCard, row: number, col: number): boolean {
+    const index = row * 5 + col;
+    return card.marks[index.toString()] || false;
+  }
+
+  getCardAsMatrix(card: BingoCard): { number: number, marked: boolean }[][] {
+    const matrix: { number: number, marked: boolean }[][] = [];
+    for (let row = 0; row < 5; row++) {
+      const rowData: { number: number, marked: boolean }[] = [];
+      for (let col = 0; col < 5; col++) {
+        rowData.push({
+          number: this.getNumberAt(card, row, col),
+          marked: this.isMarkedAt(card, row, col)
+        });
+      }
+      matrix.push(rowData);
+    }
+    return matrix;
   }
 }

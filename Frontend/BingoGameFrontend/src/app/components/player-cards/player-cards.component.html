@@ -12,13 +12,13 @@
     </div>
     
     <div class="header-controls">
-      <button mat-raised-button color="primary" (click="autoMarkDrawnNumbers()" 
+      <button mat-raised-button color="primary" (click)="autoMarkDrawnNumbers()" 
               [disabled]="gameStatus !== 'playing'">
         <mat-icon>auto_fix_high</mat-icon>
         Auto-marcar
       </button>
       
-      <button mat-button (click="toggleViewMode()">
+      <button mat-button (click)="toggleViewMode()">
         <mat-icon>{{ showAllCards ? 'view_carousel' : 'view_module' }}</mat-icon>
         {{ showAllCards ? 'Vista Individual' : 'Ver Todas' }}
       </button>

@@ -1,127 +1,151 @@
-<div class="admin-tables-container">
-  <div class="tables-header">
-    <h2>
-      <mat-icon>visibility</mat-icon>
-      Vista de Administrador - Tablas de Jugadores
-    </h2>
-    <p>Monitoreo en tiempo real de {{ playerCards.length }} jugadores</p>
+<div class="p-6 bg-gray-50 dark:bg-gray-900 min-h-screen">
+  <div class="text-center mb-8">
+    <div class="flex items-center justify-center gap-3 mb-3">
+      <mat-icon class="text-3xl text-blue-600 dark:text-blue-400">visibility</mat-icon>
+      <h2 class="text-2xl font-bold text-gray-800 dark:text-gray-200">Vista de Administrador - Tablas de Jugadores</h2>
+    </div>
+    <p class="text-gray-600 dark:text-gray-400 text-lg">Monitoreo en tiempo real de {{ playerCards.length }} jugadores</p>
   </div>
 
-  <div class="tables-grid">
-    <mat-card *ngFor="let card of playerCards; trackBy: trackByCardId" class="player-card">
-      <mat-card-header>
-        <div mat-card-avatar class="player-avatar">
-          <mat-icon>person</mat-icon>
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-8">
+    <mat-card *ngFor="let card of playerCards; trackBy: trackByCardId" class="bg-white dark:bg-gray-800 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+      <mat-card-header class="pb-2">
+        <div mat-card-avatar class="bg-blue-600 dark:bg-blue-500 text-white flex items-center justify-center">
+          <mat-icon class="text-xl">person</mat-icon>
         </div>
-        <mat-card-title>{{ card.playerName }}</mat-card-title>
-        <mat-card-subtitle>
-          <mat-chip>
+        <mat-card-title class="text-lg font-semibold text-gray-800 dark:text-gray-200">{{ card.playerName }}</mat-card-title>
+        <mat-card-subtitle class="mt-2">
+          <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium" 
+                [ngClass]="{
+                  'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400': checkForWinningPatterns(card).length > 0,
+                  'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400': getCardProgress(card) >= 80 && checkForWinningPatterns(card).length === 0,
+                  'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400': getCardProgress(card) >= 60 && getCardProgress(card) < 80,
+                  'bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-400': getCardProgress(card) < 60
+                }">
             {{ getPlayerStatus(card) }}
-          </mat-chip>
+          </span>
         </mat-card-subtitle>
       </mat-card-header>
 
-      <mat-card-content>
-        <div class="bingo-table">
-          <div class="table-header">
-            <div class="header-cell">B</div>
-            <div class="header-cell">I</div>
-            <div class="header-cell">N</div>
-            <div class="header-cell">G</div>
-            <div class="header-cell">O</div>
+      <mat-card-content class="p-4">
+        <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-3 mb-4">
+          <div class="grid grid-cols-5 gap-1 mb-2">
+            <div class="text-center font-bold text-blue-600 dark:text-blue-400 py-2 bg-blue-50 dark:bg-blue-900/20 rounded">B</div>
+            <div class="text-center font-bold text-blue-600 dark:text-blue-400 py-2 bg-blue-50 dark:bg-blue-900/20 rounded">I</div>
+            <div class="text-center font-bold text-blue-600 dark:text-blue-400 py-2 bg-blue-50 dark:bg-blue-900/20 rounded">N</div>
+            <div class="text-center font-bold text-blue-600 dark:text-blue-400 py-2 bg-blue-50 dark:bg-blue-900/20 rounded">G</div>
+            <div class="text-center font-bold text-blue-600 dark:text-blue-400 py-2 bg-blue-50 dark:bg-blue-900/20 rounded">O</div>
           </div>
           
-          <div class="table-body">
-            <div *ngFor="let row of [0,1,2,3,4]; let rowIndex = index" class="table-row">
+          <div class="grid grid-cols-5 gap-1">
+            <div *ngFor="let row of [0,1,2,3,4]; let rowIndex = index" class="contents">
               <div *ngFor="let col of [0,1,2,3,4]; let colIndex = index" 
-                   class="table-cell"
-                   [class.marked]="card.markedNumbers[colIndex][rowIndex]"
-                   [class.drawn]="isNumberDrawn(card.numbers[colIndex][rowIndex])"
-                   [class.free-space]="rowIndex === 2 && colIndex === 2">
+                   class="h-10 flex items-center justify-center text-sm font-medium rounded transition-all duration-200 relative"
+                   [ngClass]="{
+                     'bg-yellow-200 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400': rowIndex === 2 && colIndex === 2,
+                     'bg-green-200 text-green-800 dark:bg-green-900/30 dark:text-green-400': isMarkedAt(card, rowIndex, colIndex) && !(rowIndex === 2 && colIndex === 2),
+                     'bg-blue-200 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400': isNumberDrawn(getNumberAt(card, rowIndex, colIndex)) && !isMarkedAt(card, rowIndex, colIndex) && !(rowIndex === 2 && colIndex === 2),
+                     'bg-white dark:bg-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-500': !isMarkedAt(card, rowIndex, colIndex) && !isNumberDrawn(getNumberAt(card, rowIndex, colIndex)) && !(rowIndex === 2 && colIndex === 2)
+                   }">
                 <span *ngIf="!(rowIndex === 2 && colIndex === 2); else freeSpace">
-                  {{ card.numbers[colIndex][rowIndex] }}
+                  {{ getNumberAt(card, rowIndex, colIndex) }}
                 </span>
                 <ng-template #freeSpace>
-                  <mat-icon class="free-icon">star</mat-icon>
+                  <mat-icon class="text-lg">star</mat-icon>
                 </ng-template>
                 
                 <!-- Indicador de número cantado -->
-                <div *ngIf="isNumberDrawn(card.numbers[colIndex][rowIndex]) && card.markedNumbers[colIndex][rowIndex]" 
-                     class="drawn-indicator">
-                  <mat-icon>check_circle</mat-icon>
+                <div *ngIf="isNumberDrawn(getNumberAt(card, rowIndex, colIndex)) && isMarkedAt(card, rowIndex, colIndex)" 
+                     class="absolute -top-1 -right-1 text-green-600 dark:text-green-400">
+                  <mat-icon class="text-sm">check_circle</mat-icon>
                 </div>
               </div>
             </div>
           </div>
         </div>
 
-        <!-- Patrones ganadores -->
-        <div *ngIf="checkForWinningPatterns(card).length > 0" class="winning-patterns">
-          <div class="pattern-header">
-            <mat-icon color="accent">emoji_events</mat-icon>
-            <strong>Patrones Ganadores:</strong>
-          </div>
-          <div class="patterns-list">
-            <mat-chip *ngFor="let pattern of checkForWinningPatterns(card)">
+        <div class="mb-4" *ngIf="checkForWinningPatterns(card).length > 0">
+          <h4 class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2 flex items-center gap-2">
+            <mat-icon class="text-green-600 dark:text-green-400 text-lg">emoji_events</mat-icon>
+            Patrones Ganadores:
+          </h4>
+          <div class="flex flex-wrap gap-2">
+            <span *ngFor="let pattern of checkForWinningPatterns(card)" 
+                  class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400">
               {{ pattern }}
-            </mat-chip>
+            </span>
           </div>
         </div>
 
-        <!-- Progreso de la carta -->
-        <div class="card-progress">
-          <div class="progress-info">
-            <span>Progreso: {{ getCardProgress(card) }}%</span>
-            <mat-icon *ngIf="getCardProgress(card) >= 80" color="warn">warning</mat-icon>
+        <div class="mb-4">
+          <div class="flex justify-between items-center mb-2">
+            <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Progreso</span>
+            <span class="text-sm font-semibold" 
+                  [ngClass]="{
+                    'text-green-600 dark:text-green-400': getCardProgress(card) >= 80,
+                    'text-yellow-600 dark:text-yellow-400': getCardProgress(card) >= 60 && getCardProgress(card) < 80,
+                    'text-blue-600 dark:text-blue-400': getCardProgress(card) < 60
+                  }">{{ getCardProgress(card) }}%</span>
           </div>
-          <div class="progress-bar">
-            <div class="progress-fill" [style.width.%]="getCardProgress(card)"></div>
+          <div class="w-full bg-gray-200 dark:bg-gray-600 rounded-full h-2">
+            <div class="h-2 rounded-full transition-all duration-300" 
+                 [ngClass]="{
+                   'bg-green-500': getCardProgress(card) >= 80,
+                   'bg-yellow-500': getCardProgress(card) >= 60 && getCardProgress(card) < 80,
+                   'bg-blue-500': getCardProgress(card) < 60
+                 }"
+                 [style.width.%]="getCardProgress(card)">
+            </div>
           </div>
         </div>
       </mat-card-content>
 
-      <mat-card-actions>
-        <button mat-button color="primary">
-          <mat-icon>zoom_in</mat-icon>
+      <mat-card-actions class="p-4 pt-0 flex gap-2">
+        <button mat-stroked-button class="flex-1 text-blue-600 border-blue-600 hover:bg-blue-50 dark:text-blue-400 dark:border-blue-400 dark:hover:bg-blue-900/20">
+          <mat-icon class="mr-2">visibility</mat-icon>
           Ver Detalle
         </button>
-        <button mat-button color="accent" *ngIf="checkForWinningPatterns(card).length > 0">
-          <mat-icon>notifications</mat-icon>
-          Notificar
+        <button mat-flat-button *ngIf="checkForWinningPatterns(card).length > 0" 
+                class="flex-1 bg-green-600 text-white hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600">
+          <mat-icon class="mr-2">emoji_events</mat-icon>
+          Validar
         </button>
       </mat-card-actions>
     </mat-card>
   </div>
 
-  <!-- Estadísticas generales -->
-  <div class="stats-panel">
-    <mat-card>
-      <mat-card-header>
-        <mat-card-title>
-          <mat-icon>analytics</mat-icon>
-          Estadísticas de la Sala
-        </mat-card-title>
-      </mat-card-header>
-      <mat-card-content>
-        <div class="stats-grid">
-          <div class="stat-item">
-            <div class="stat-value">{{ playerCards.length }}</div>
-            <div class="stat-label">Jugadores Activos</div>
-          </div>
-          <div class="stat-item">
-            <div class="stat-value">{{ drawnBalls.length }}</div>
-            <div class="stat-label">Números Cantados</div>
-          </div>
-          <div class="stat-item">
-            <div class="stat-value">{{ getWinnersCount() }}</div>
-            <div class="stat-label">Ganadores</div>
-          </div>
-          <div class="stat-item">
-            <div class="stat-value">{{ getAverageProgress() }}%</div>
-            <div class="stat-label">Progreso Promedio</div>
-          </div>
-        </div>
-      </mat-card-content>
-    </mat-card>
+  <!-- Gestión de Invitaciones -->
+  <div class="mb-8">
+    <app-invitation-manager [roomId]="roomId"></app-invitation-manager>
   </div>
+
+  <!-- Estadísticas -->
+  <mat-card class="bg-white dark:bg-gray-800 rounded-lg shadow-lg">
+    <mat-card-header class="pb-2">
+      <mat-card-title class="flex items-center gap-3 text-xl font-bold text-gray-800 dark:text-gray-200">
+        <mat-icon class="text-2xl text-purple-600 dark:text-purple-400">analytics</mat-icon>
+        Estadísticas de la Sala
+      </mat-card-title>
+    </mat-card-header>
+    <mat-card-content class="p-6">
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
+        <div class="text-center p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+          <div class="text-3xl font-bold text-blue-600 dark:text-blue-400 mb-2">{{ playerCards.length }}</div>
+          <div class="text-sm font-medium text-gray-600 dark:text-gray-400">Jugadores Activos</div>
+        </div>
+        <div class="text-center p-4 bg-green-50 dark:bg-green-900/20 rounded-lg">
+          <div class="text-3xl font-bold text-green-600 dark:text-green-400 mb-2">{{ drawnBalls.length }}</div>
+          <div class="text-sm font-medium text-gray-600 dark:text-gray-400">Números Cantados</div>
+        </div>
+        <div class="text-center p-4 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg">
+          <div class="text-3xl font-bold text-yellow-600 dark:text-yellow-400 mb-2">{{ getWinnersCount() }}</div>
+          <div class="text-sm font-medium text-gray-600 dark:text-gray-400">Ganadores</div>
+        </div>
+        <div class="text-center p-4 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
+          <div class="text-3xl font-bold text-purple-600 dark:text-purple-400 mb-2">{{ getAverageProgress() }}%</div>
+          <div class="text-sm font-medium text-gray-600 dark:text-gray-400">Progreso Promedio</div>
+        </div>
+      </div>
+    </mat-card-content>
+  </mat-card>
 </div>

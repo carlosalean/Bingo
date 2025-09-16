@@ -13,6 +13,7 @@ public class BingoDbContext : DbContext
     public DbSet<BingoCard> BingoCards { get; set; }
     public DbSet<GameSession> GameSessions { get; set; }
     public DbSet<ChatMessage> ChatMessages { get; set; }
+    public DbSet<Invitation> Invitations { get; set; }
 
     public BingoDbContext(DbContextOptions<BingoDbContext> options) : base(options)
     {
@@ -133,6 +134,25 @@ public class BingoDbContext : DbContext
                   .WithMany()
                   .HasForeignKey(m => m.SenderId)
                   .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        // Invitation
+        modelBuilder.Entity<Invitation>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Id).ValueGeneratedNever();
+            entity.Property(e => e.Email).HasMaxLength(100).IsRequired();
+            entity.Property(e => e.GuestName).HasMaxLength(50);
+            entity.Property(e => e.CreatedAt).HasDefaultValueSql("GETUTCDATE()");
+            entity.HasOne(i => i.Room)
+                  .WithMany()
+                  .HasForeignKey(i => i.RoomId)
+                  .OnDelete(DeleteBehavior.Cascade);
+            entity.HasOne(i => i.InvitedBy)
+                  .WithMany()
+                  .HasForeignKey(i => i.InvitedById)
+                  .OnDelete(DeleteBehavior.Restrict);
+            entity.HasIndex(e => new { e.Email, e.RoomId }).IsUnique();
         });
 
         base.OnModelCreating(modelBuilder);

@@ -12,5 +12,6 @@ export const authGuard: CanActivateFn = (route, state) => {
   
   // Si no está autenticado o el token no es válido, hacer logout y redirigir
   authService.logout();
+  router.navigate(['/login']);
   return false;
 };

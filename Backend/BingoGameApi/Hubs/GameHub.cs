@@ -10,7 +10,7 @@ using System.Collections.Generic;
 
 namespace BingoGameApi.Hubs;
 
-[Authorize]
+[AllowAnonymous]
 public class GameHub : Hub
 {
     private readonly IGameService _gameService;
@@ -24,15 +24,33 @@ public class GameHub : Hub
 
     public override async Task OnConnectedAsync()
     {
+        Console.WriteLine($"SignalR connection established: {Context.ConnectionId}");
+        Console.WriteLine($"User authenticated: {Context.User?.Identity?.IsAuthenticated}");
+        Console.WriteLine($"User name: {Context.User?.Identity?.Name}");
+        
         var userIdClaim = Context.User.FindFirst(ClaimTypes.NameIdentifier);
+        Console.WriteLine($"User ID claim: {userIdClaim?.Value}");
+        
         if (userIdClaim != null)
         {
             var roomIdStr = Context.GetHttpContext().Request.Query["roomId"].ToString();
+            Console.WriteLine($"Room ID from query: {roomIdStr}");
+            
             if (Guid.TryParse(roomIdStr, out var roomId))
             {
+                Console.WriteLine($"Adding connection {Context.ConnectionId} to room-{roomId}");
                 await Groups.AddToGroupAsync(Context.ConnectionId, $"room-{roomId}");
             }
+            else
+            {
+                Console.WriteLine($"Invalid room ID format in query: {roomIdStr}");
+            }
         }
+        else
+        {
+            Console.WriteLine("No user ID claim found in connection");
+        }
+        
         await base.OnConnectedAsync();
     }
 
@@ -50,18 +68,40 @@ public class GameHub : Hub
     {
         try
         {
+            Console.WriteLine($"JoinRoom called with roomIdStr: {roomIdStr}");
+            
+            if (string.IsNullOrEmpty(roomIdStr))
+            {
+                Console.WriteLine("RoomId is null or empty");
+                await Clients.Caller.SendAsync("Error", "Room ID is required");
+                return;
+            }
+            
             if (!Guid.TryParse(roomIdStr, out var roomId))
             {
-                throw new ArgumentException("Invalid roomId");
+                Console.WriteLine($"Invalid roomId format: {roomIdStr}");
+                await Clients.Caller.SendAsync("Error", "Invalid room ID format");
+                return;
             }
     
-            var userIdClaim = Context.User.FindFirst(ClaimTypes.NameIdentifier);
-            if (userIdClaim == null)
+            var userIdClaim = Context.User?.FindFirst(ClaimTypes.NameIdentifier);
+            Guid userId;
+            string name;
+            
+            Console.WriteLine($"User claims: {Context.User?.Identity?.Name}, IsAuthenticated: {Context.User?.Identity?.IsAuthenticated}");
+            
+            // Handle guest users and parsing errors
+            if (userIdClaim == null || string.IsNullOrEmpty(userIdClaim.Value) || !Guid.TryParse(userIdClaim.Value, out userId) || userId == Guid.Empty)
             {
-                throw new UnauthorizedAccessException("User not authenticated");
+                userId = Guid.NewGuid(); // Generate temporary ID for guest
+                name = "Guest";
+                Console.WriteLine($"Using guest user with ID: {userId}");
             }
-            var userId = Guid.Parse(userIdClaim.Value);
-            var name = Context.User.FindFirst(ClaimTypes.Name)?.Value ?? "Guest";
+            else
+            {
+                name = Context.User?.FindFirst(ClaimTypes.Name)?.Value ?? "User";
+                Console.WriteLine($"Using authenticated user: {name} with ID: {userId}");
+            }
     
             // Validate token if guest - stub for now (assume guest token provides temp userId via claims)
             // if (!string.IsNullOrEmpty(userToken))
@@ -70,13 +110,17 @@ public class GameHub : Hub
             //     // e.g., using IAuthService.ValidateGuestToken(userToken)
             // }
     
+            Console.WriteLine($"Adding user {userId} to group room-{roomId}");
             await Groups.AddToGroupAsync(Context.ConnectionId, $"room-{roomId}");
             await Clients.Group($"room-{roomId}").SendAsync("PlayerJoined", new { UserId = userId, Name = name });
+            
+            Console.WriteLine($"Successfully joined room {roomId}");
         }
         catch (Exception ex)
         {
             Console.WriteLine($"Error in JoinRoom: {ex.Message}");
-            throw;
+            Console.WriteLine($"Stack trace: {ex.StackTrace}");
+            await Clients.Caller.SendAsync("Error", $"Failed to join room: {ex.Message}");
         }
     }
 
@@ -89,8 +133,20 @@ public class GameHub : Hub
                 throw new ArgumentException("Invalid roomId");
             }
     
-            var userId = Guid.Parse(Context.User.FindFirst(ClaimTypes.NameIdentifier).Value);
-            var name = Context.User.FindFirst(ClaimTypes.Name)?.Value ?? "Guest";
+            var userIdClaim = Context.User?.FindFirst(ClaimTypes.NameIdentifier);
+            Guid userId;
+            string name;
+            
+            // Handle guest users and parsing errors
+            if (userIdClaim == null || string.IsNullOrEmpty(userIdClaim.Value) || !Guid.TryParse(userIdClaim.Value, out userId) || userId == Guid.Empty)
+            {
+                userId = Guid.NewGuid(); // Generate temporary ID for guest
+                name = "Guest";
+            }
+            else
+            {
+                name = Context.User?.FindFirst(ClaimTypes.Name)?.Value ?? "User";
+            }
     
             await Groups.RemoveFromGroupAsync(Context.ConnectionId, $"room-{roomId}");
             await Clients.Group($"room-{roomId}").SendAsync("PlayerLeft", new { UserId = userId, Name = name });
@@ -111,7 +167,14 @@ public class GameHub : Hub
                 throw new ArgumentException("Invalid roomId");
             }
     
-            var senderId = Guid.Parse(Context.User.FindFirst(ClaimTypes.NameIdentifier).Value);
+            var userIdClaim = Context.User?.FindFirst(ClaimTypes.NameIdentifier);
+            Guid senderId;
+            
+            // Handle guest users and parsing errors
+            if (userIdClaim == null || string.IsNullOrEmpty(userIdClaim.Value) || !Guid.TryParse(userIdClaim.Value, out senderId) || senderId == Guid.Empty)
+            {
+                senderId = Guid.NewGuid(); // Generate temporary ID for guest
+            }
     
             await _roomService.AddChatMessageAsync(roomId, senderId, message);
     
@@ -180,7 +243,7 @@ public class GameHub : Hub
         }
     }
 
-    public async Task GetDrawnBalls(string roomIdStr)
+    public async Task<object> GetDrawnBalls(string roomIdStr)
     {
         try
         {
@@ -190,7 +253,7 @@ public class GameHub : Hub
             }
     
             var drawnBalls = await _gameService.GetDrawnBallsAsync(roomId);
-            await Clients.Caller.SendAsync("DrawnBalls", new { List = drawnBalls });
+            return new { balls = drawnBalls };
         }
         catch (Exception ex)
         {

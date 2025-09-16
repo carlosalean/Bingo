@@ -51,6 +51,22 @@ public class RoomController : ControllerBase
         }
     }
 
+    [HttpGet]
+    [AllowAnonymous]
+    public async Task<ActionResult<List<RoomDto>>> GetAllRooms()
+    {
+        try
+        {
+            var rooms = await _roomService.GetPublicRoomsAsync();
+            return Ok(rooms);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error in GetAllRooms: {ex.Message}");
+            return BadRequest("Failed to get rooms");
+        }
+    }
+
     [HttpGet("user")]
     [Authorize]
     public async Task<ActionResult<List<RoomDto>>> GetUserRooms()
@@ -206,6 +222,27 @@ public class RoomController : ControllerBase
         }
     }
 
+    [HttpGet("{roomId}")]
+    [Authorize]
+    public async Task<ActionResult<RoomDto>> GetRoomById(string roomId)
+    {
+        try
+        {
+            var roomDto = await _roomService.GetRoomByIdAsync(roomId);
+            if (roomDto == null)
+            {
+                return NotFound("Room not found");
+            }
+
+            return Ok(roomDto);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error in GetRoomById: {ex.Message}");
+            return BadRequest("Failed to get room");
+        }
+    }
+
     [HttpGet("public")]
     [AllowAnonymous]
     public async Task<ActionResult<List<RoomDto>>> GetPublicRooms()
@@ -219,6 +256,22 @@ public class RoomController : ControllerBase
         {
             Console.WriteLine($"Error in GetPublicRooms: {ex.Message}");
             return BadRequest("Failed to get public rooms");
+        }
+    }
+
+    [HttpGet("{roomId}/players")]
+    [Authorize]
+    public async Task<ActionResult<List<BingoCardDto>>> GetRoomPlayers(string roomId)
+    {
+        try
+        {
+            var players = await _roomService.GetRoomPlayersAsync(roomId);
+            return Ok(players);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error in GetRoomPlayers: {ex.Message}");
+            return BadRequest("Failed to get room players");
         }
     }
 }

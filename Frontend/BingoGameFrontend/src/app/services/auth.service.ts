@@ -40,7 +40,7 @@ export class AuthService {
   }
 
   getToken(): string | null {
-    return localStorage.getItem('token');
+    return localStorage.getItem('token') || localStorage.getItem('guestToken');
   }
 
   getUser(): User | null {

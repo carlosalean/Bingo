@@ -5,5 +5,6 @@ namespace BingoGameApi.Models;
 public enum UserRole
 {
     Host,
-    Player
+    Player,
+    Guest
 }
