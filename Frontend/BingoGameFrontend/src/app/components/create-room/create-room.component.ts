@@ -11,6 +11,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { ApiService, RoomCreateDto } from '../../services/api.service';
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-create-room',
@@ -37,6 +38,7 @@ export class CreateRoomComponent implements OnInit {
   constructor(
     private fb: FormBuilder,
     private apiService: ApiService,
+    private authService: AuthService,
     private router: Router,
     private snackBar: MatSnackBar
   ) {}
@@ -48,7 +50,7 @@ export class CreateRoomComponent implements OnInit {
   private initializeForm(): void {
     this.createRoomForm = this.fb.group({
       name: ['', [Validators.required, Validators.minLength(3)]],
-      bingoType: ['SeventyFive', Validators.required],
+      BingoType: ['SeventyFive', Validators.required],
       maxPlayers: [6, [Validators.required, Validators.min(2), Validators.max(20)]],
       isPrivate: [false, Validators.required]
     });
@@ -56,11 +58,21 @@ export class CreateRoomComponent implements OnInit {
 
   onSubmit(): void {
     if (this.createRoomForm.valid && !this.isLoading) {
+      // Verificar autenticación antes de proceder
+      if (!this.authService.isLoggedIn() || !this.authService.isTokenValid()) {
+        this.snackBar.open('Tu sesión ha expirado. Por favor, inicia sesión nuevamente.', 'Cerrar', {
+          duration: 5000,
+          panelClass: ['error-snackbar']
+        });
+        this.authService.logout();
+        return;
+      }
+
       this.isLoading = true;
       
       const roomData: RoomCreateDto = {
         name: this.createRoomForm.value.name,
-        bingoType: this.createRoomForm.value.bingoType,
+        BingoType: this.createRoomForm.value.BingoType,
         maxPlayers: parseInt(this.createRoomForm.value.maxPlayers),
         isPrivate: this.createRoomForm.value.isPrivate
       };
@@ -85,7 +97,18 @@ export class CreateRoomComponent implements OnInit {
           console.error('Error creating room:', error);
           
           let errorMessage = 'Error al crear la sala';
-          if (error.error?.message) {
+          
+          if (error.status === 401) {
+            errorMessage = 'Tu sesión ha expirado. Por favor, inicia sesión nuevamente.';
+            // El interceptor ya maneja el logout automáticamente
+          } else if (error.status === 400) {
+            if (error.error?.errors) {
+              const validationErrors = Object.values(error.error.errors).flat();
+              errorMessage = validationErrors.join(', ');
+            } else if (error.error?.message) {
+              errorMessage = error.error.message;
+            }
+          } else if (error.error?.message) {
             errorMessage = error.error.message;
           } else if (error.message) {
             errorMessage = error.message;
@@ -119,7 +142,7 @@ export class CreateRoomComponent implements OnInit {
   }
 
   get bingoTypeControl() {
-    return this.createRoomForm.get('bingoType');
+    return this.createRoomForm.get('BingoType');
   }
 
   get maxPlayersControl() {

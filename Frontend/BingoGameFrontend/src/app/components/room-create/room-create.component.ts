@@ -39,7 +39,7 @@ export class RoomCreateComponent implements OnInit {
     private snackBar: MatSnackBar
   ) {
     this.createForm = this.fb.group({
-      name: ['', [Validators.required]],
+      name: ['', [Validators.required, Validators.minLength(3)]],
       bingoType: ['SeventyFive', Validators.required],
       maxPlayers: [50, [Validators.required, Validators.min(1), Validators.max(100)]],
       isPrivate: [false]

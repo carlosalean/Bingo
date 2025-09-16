@@ -15,7 +15,7 @@ export interface RegisterDto {
 
 export interface RoomCreateDto {
   name: string;
-  bingoType: 'SeventyFive' | 'Ninety';
+  BingoType: 'SeventyFive' | 'Ninety';
   maxPlayers: number;
   isPrivate: boolean;
 }
@@ -35,12 +35,13 @@ export interface DrawnBallsDto {
 export interface RoomDto {
   id: string;
   name: string;
-  bingoType: 'SeventyFive' | 'Ninety';
+  type: 'SeventyFive' | 'Ninety';
   maxPlayers: number;
   isPrivate: boolean;
-  inviteCode?: string;
-  currentPlayers?: number;
-  status?: string;
+  inviteCode: string;
+  hostId: string;
+  createdAt: string;
+  playerCount: number;
 }
 
 @Injectable({
@@ -53,8 +54,9 @@ export class ApiService {
   constructor(private http: HttpClient) { }
 
   private getAuthHeaders(): HttpHeaders {
-    const token = localStorage.getItem('token');
-    return this.headers.set('Authorization', `Bearer ${token}`);
+    // El interceptor de autenticación maneja automáticamente el token
+    // Solo devolvemos los headers básicos
+    return this.headers;
   }
 
   postLogin(credentials: LoginDto): Observable<any> {

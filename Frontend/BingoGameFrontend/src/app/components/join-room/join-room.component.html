@@ -51,7 +51,7 @@
             <mat-icon>casino</mat-icon>
             <div class="info-text">
               <strong>{{ roomInfo.name }}</strong>
-              <span>{{ roomInfo.bingoType }}</span>
+              <span>{{ roomInfo.type }}</span>
             </div>
           </div>
           
@@ -113,14 +113,14 @@
                 <h4>{{ room.name }}</h4>
                 <div class="room-status">
                   <mat-icon>people</mat-icon>
-                  <span>{{ room.currentPlayers }}/{{ room.maxPlayers }}</span>
+                  <span>{{ room.playerCount }}/{{ room.maxPlayers }}</span>
                 </div>
               </div>
               
               <div class="room-details">
                 <div class="detail">
                   <mat-icon>casino</mat-icon>
-                  <span>{{ room.bingoType }}</span>
+                  <span>{{ room.type }}</span>
                 </div>
               </div>
               

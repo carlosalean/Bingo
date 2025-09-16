@@ -15,7 +15,7 @@ import { debounceTime, distinctUntilChanged, switchMap, catchError } from 'rxjs/
 interface RoomInfo {
   id: string;
   name: string;
-  bingoType: string;
+  type: string;
   maxPlayers: number;
   currentPlayers: number;
   isPrivate: boolean;
@@ -92,11 +92,11 @@ export class JoinRoomComponent implements OnInit {
         this.roomInfo = {
           id: room.id,
           name: room.name,
-          bingoType: room.bingoType,
+          type: room.type,
           maxPlayers: room.maxPlayers,
-          currentPlayers: room.currentPlayers || 0,
+          currentPlayers: room.playerCount || 0,
           isPrivate: room.isPrivate,
-          status: room.status || 'Esperando jugadores'
+          status: 'Waiting'
         };
         this.errorMessage = '';
       }
