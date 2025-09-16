@@ -3,6 +3,9 @@ using System.Net.Mail;
 using System.Text;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using MailKit.Net.Smtp;
+using MailKit.Security;
+using MimeKit;
 
 namespace BingoGameApi.Services
 {
@@ -60,36 +63,58 @@ namespace BingoGameApi.Services
                     return false;
                 }
 
-                using var client = new SmtpClient(_smtpHost, _smtpPort)
+                // Crear mensaje usando MimeKit
+                var message = new MimeMessage();
+                message.From.Add(new MailboxAddress(_fromName, _fromEmail));
+                message.To.Add(new MailboxAddress("", toEmail));
+                message.Subject = subject;
+
+                var bodyBuilder = new BodyBuilder
                 {
-                    EnableSsl = _enableSsl,
-                    Credentials = new NetworkCredential(_smtpUsername, _smtpPassword)
+                    HtmlBody = body
                 };
+                message.Body = bodyBuilder.ToMessageBody();
 
-                using var message = new MailMessage
+                // Usar MailKit SmtpClient que maneja SSL implícito correctamente
+                using var client = new MailKit.Net.Smtp.SmtpClient();
+                
+                // Configurar opciones de seguridad según el puerto
+                SecureSocketOptions secureSocketOptions;
+                if (_smtpPort == 465)
                 {
-                    From = new MailAddress(_fromEmail, _fromName),
-                    Subject = subject,
-                    Body = body,
-                    IsBodyHtml = true,
-                    BodyEncoding = Encoding.UTF8,
-                    SubjectEncoding = Encoding.UTF8
-                };
+                    // Puerto 465 usa SSL implícito
+                    secureSocketOptions = SecureSocketOptions.SslOnConnect;
+                    _logger.LogInformation("Usando SSL implícito para puerto 465");
+                }
+                else if (_smtpPort == 587)
+                {
+                    // Puerto 587 usa STARTTLS
+                    secureSocketOptions = SecureSocketOptions.StartTls;
+                }
+                else
+                {
+                    // Para otros puertos, usar auto-detección
+                    secureSocketOptions = SecureSocketOptions.Auto;
+                }
 
-                message.To.Add(toEmail);
-
-                await client.SendMailAsync(message);
-                _logger.LogInformation("Email sent successfully to {Email}", toEmail);
+                // Conectar al servidor SMTP
+                await client.ConnectAsync(_smtpHost, _smtpPort, secureSocketOptions);
+                
+                // Autenticar
+                await client.AuthenticateAsync(_smtpUsername, _smtpPassword);
+                
+                // Enviar mensaje
+                await client.SendAsync(message);
+                
+                // Desconectar
+                await client.DisconnectAsync(true);
+                
+                _logger.LogInformation("Email sent successfully to {Email} using MailKit", toEmail);
                 return true;
-            }
-            catch (SmtpException ex)
-            {
-                _logger.LogError(ex, "SMTP error sending email to {Email}: {Message}", toEmail, ex.Message);
-                return false;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Unexpected error sending email to {Email}", toEmail);
+                _logger.LogError(ex, "Error sending email to {Email}: {Message}", toEmail, ex.Message);
                 return false;
             }
         }

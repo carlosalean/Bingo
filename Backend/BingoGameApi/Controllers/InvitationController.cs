@@ -100,7 +100,7 @@ public class InvitationController : ControllerBase
     }
 
     [HttpDelete("{id}")]
-    [Authorize(Roles = "User,Admin")]
+    [Authorize(Roles = "Player,Host")]
     public async Task<ActionResult> DeleteInvitation(Guid id)
     {
         try
