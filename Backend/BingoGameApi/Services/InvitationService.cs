@@ -66,7 +66,7 @@ public class InvitationService : IInvitationService
         {
             await _emailService.SendInvitationEmailAsync(
                 invitation.Email,
-                invitation.Id.ToString(),
+                room.InviteCode, // Usar InviteCode en lugar del ID de invitación
                 room.Name,
                 room.Host.Username,
                 invitationLink

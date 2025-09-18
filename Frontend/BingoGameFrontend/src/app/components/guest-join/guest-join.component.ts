@@ -124,7 +124,7 @@ export class GuestJoinComponent implements OnInit {
         
         // Redirigir a la sala de juego
         setTimeout(() => {
-          this.router.navigate(['/room', this.invitation?.roomId]);
+          this.router.navigate(['/game', this.invitation?.roomId]);
         }, 1500);
       },
       error: (error) => {

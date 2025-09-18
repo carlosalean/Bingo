@@ -36,18 +36,52 @@ namespace BingoGameApi.Services
             _enableSsl = bool.Parse(_configuration["Email:EnableSsl"] ?? "true");
         }
 
-        public async Task<bool> SendInvitationEmailAsync(string toEmail, string invitationId, string roomName, string hostName, string invitationLink)
+        public async Task<bool> SendInvitationEmailAsync(string toEmail, string inviteCode, string roomName, string hostName, string invitationLink)
         {
             try
             {
-                var subject = $"¡Invitación para jugar Bingo en la sala '{roomName}'!";
-                var body = GenerateInvitationEmailBody(invitationId, roomName, hostName, invitationLink);
+                var message = new MimeMessage();
+                message.From.Add(new MailboxAddress("Bingo Game", _smtpUsername));
+                message.To.Add(new MailboxAddress("", toEmail));
+                message.Subject = $"Invitación a la sala de Bingo: {roomName}";
+
+                var bodyBuilder = new BodyBuilder();
+                bodyBuilder.HtmlBody = $@"
+                    <h2>¡Has sido invitado a jugar Bingo!</h2>
+                    <p><strong>Sala:</strong> {roomName}</p>
+                    <p><strong>Anfitrión:</strong> {hostName}</p>
+                    <p><strong>Código de invitación:</strong> {inviteCode}</p>
+                    <p>Haz clic en el siguiente enlace para unirte:</p>
+                    <a href='{invitationLink}' style='background-color: #4CAF50; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;'>Unirse a la sala</a>
+                    <p>O copia y pega este enlace en tu navegador: {invitationLink}</p>
+                ";
+
+                message.Body = bodyBuilder.ToMessageBody();
+
+                using var client = new MailKit.Net.Smtp.SmtpClient();
                 
-                return await SendEmailAsync(toEmail, subject, body);
+                // Configurar SSL según el puerto
+                if (_smtpPort == 465)
+                {
+                    // SSL implícito para puerto 465
+                    await client.ConnectAsync(_smtpHost, _smtpPort, SecureSocketOptions.SslOnConnect);
+                }
+                else
+                {
+                    // STARTTLS para puerto 587
+                    await client.ConnectAsync(_smtpHost, _smtpPort, SecureSocketOptions.StartTls);
+                }
+                
+                await client.AuthenticateAsync(_smtpUsername, _smtpPassword);
+                await client.SendAsync(message);
+                await client.DisconnectAsync(true);
+
+                _logger.LogInformation("Email enviado exitosamente a {Email} con código de invitación: {InviteCode}", toEmail, inviteCode);
+                return true;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error sending invitation email to {Email}", toEmail);
+                _logger.LogError(ex, "Error enviando email: {Message}", ex.Message);
                 return false;
             }
         }
